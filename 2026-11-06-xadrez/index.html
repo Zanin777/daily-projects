@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aprenda Xadrez</title>
+  <meta name="description" content="Aprenda a jogar xadrez: movimento das peças, valores, xeque-mate e aberturas, tudo interativo.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#inicio"><span aria-hidden="true">♞&#xFE0E;</span> Aprenda Xadrez</a>
+    <nav aria-label="Seções">
+      <a href="#pecas">Peças</a>
+      <a href="#valores">Valores</a>
+      <a href="#xeque">Xeque-mate</a>
+      <a href="#aberturas">Aberturas</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="inicio" class="hero">
+      <div class="hero-text">
+        <p class="eyebrow">Do zero ao primeiro jogo</p>
+        <h1>Aprenda xadrez <em>mexendo</em> nas peças.</h1>
+        <p class="lead">Cada lição tem um tabuleiro de verdade: clique nas peças, veja onde elas podem ir, onde podem capturar e acompanhe aberturas lance a lance.</p>
+        <a class="btn" href="#pecas">Começar pelas peças →</a>
+      </div>
+      <div class="hero-board">
+        <div class="board" id="hero-board" aria-label="Tabuleiro na posição inicial"></div>
+        <p class="caption">A posição inicial. As brancas sempre começam. A casa do canto inferior direito é sempre clara.</p>
+      </div>
+    </section>
+
+    <section id="pecas" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Lição 1</p>
+        <h2>Como cada peça se move</h2>
+        <p>Escolha uma peça. Clique em uma casa marcada para mover a peça até lá. Você também pode clicar em outra peça branca para ver os lances dela.</p>
+      </div>
+
+      <div class="tabs" id="piece-tabs" role="tablist" aria-label="Peças"></div>
+
+      <div class="lesson">
+        <div class="board-wrap">
+          <div class="board" id="explorer-board"></div>
+          <ul class="legend">
+            <li><span class="key key-move"></span> pode mover</li>
+            <li><span class="key key-capture"></span> pode capturar</li>
+            <li><span class="key key-danger">✕</span> proibido para o rei</li>
+          </ul>
+        </div>
+        <article class="panel" id="explorer-info" aria-live="polite">
+          <div class="piece-title">
+            <span class="piece-glyph" id="ex-glyph"></span>
+            <div>
+              <h3 id="ex-name"></h3>
+              <p class="muted" id="ex-value"></p>
+            </div>
+          </div>
+          <h4>Como se move</h4>
+          <p id="ex-move"></p>
+          <h4>Como captura</h4>
+          <p id="ex-capture"></p>
+          <p class="tip" id="ex-tip"></p>
+          <p class="counter" id="ex-counter"></p>
+          <button class="btn btn-ghost" id="ex-reset" type="button">↺ Recomeçar</button>
+        </article>
+      </div>
+    </section>
+
+    <section id="valores" class="section alt">
+      <div class="section-head">
+        <p class="eyebrow">Lição 2</p>
+        <h2>Quanto vale cada peça</h2>
+        <p>Os pontos ajudam a decidir se uma troca é boa. Dar um cavalo (3) para ganhar uma torre (5) é bom negócio. Dar a dama (9) por um bispo (3), não.</p>
+      </div>
+      <div class="values" id="values"></div>
+      <p class="note-box">Os valores são um guia, não uma regra. Às vezes uma peça "barata" bem posicionada vale mais do que uma "cara" presa num canto.</p>
+    </section>
+
+    <section id="xeque" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Lição 3</p>
+        <h2>Xeque, xeque-mate e afogamento</h2>
+        <p>O objetivo do xadrez não é capturar todas as peças: é dar <strong>xeque-mate</strong> no rei adversário.</p>
+      </div>
+
+      <div class="rules">
+        <div class="rule">
+          <h3>Xeque</h3>
+          <p>O rei está sendo atacado. Quem está em xeque <strong>é obrigado</strong> a sair dele no próximo lance.</p>
+        </div>
+        <div class="rule">
+          <h3>Xeque-mate</h3>
+          <p>O rei está em xeque e não existe nenhum jeito de sair. Fim de jogo: quem deu o mate vence.</p>
+        </div>
+        <div class="rule">
+          <h3>Afogamento</h3>
+          <p>O jogador da vez <em>não</em> está em xeque, mas não tem nenhum lance permitido. A partida termina empatada.</p>
+        </div>
+      </div>
+
+      <div class="escape">
+        <h3>3 jeitos de sair do xeque</h3>
+        <ol>
+          <li><strong>Fugir:</strong> mover o rei para uma casa que não está atacada.</li>
+          <li><strong>Bloquear:</strong> colocar uma peça entre o atacante e o rei.</li>
+          <li><strong>Capturar:</strong> tomar a peça que está dando o xeque.</li>
+        </ol>
+        <p class="muted">Se nenhum dos três funcionar, é xeque-mate.</p>
+      </div>
+
+      <div class="player" id="mate-player"></div>
+    </section>
+
+    <section id="aberturas" class="section alt">
+      <div class="section-head">
+        <p class="eyebrow">Lição 4</p>
+        <h2>Aberturas para começar bem</h2>
+        <p>A abertura são os primeiros lances do jogo. Três ideias valem para quase todas: <strong>ocupar o centro</strong>, <strong>tirar os cavalos e bispos</strong> de casa e <strong>proteger o rei</strong>.</p>
+      </div>
+
+      <details class="notation">
+        <summary>Como ler os lances (notação)</summary>
+        <p>Cada casa tem um nome: a letra da coluna (a–h) e o número da fileira (1–8). A letra antes da casa diz qual peça se moveu:</p>
+        <ul>
+          <li><strong>R</strong> = Rei, <strong>D</strong> = Dama, <strong>T</strong> = Torre, <strong>B</strong> = Bispo, <strong>C</strong> = Cavalo. O peão não tem letra.</li>
+          <li><strong>x</strong> = captura (ex.: <code>Cxd4</code>, o cavalo captura em d4).</li>
+          <li><strong>+</strong> = xeque, <strong>#</strong> = xeque-mate.</li>
+          <li><strong>O-O</strong> = roque: o rei anda duas casas em direção à torre e a torre pula por cima dele, deixando o rei protegido no canto.</li>
+        </ul>
+      </details>
+
+      <div class="player" id="opening-player"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Feito com HTML, CSS e JavaScript puro · Projeto diário #1</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
