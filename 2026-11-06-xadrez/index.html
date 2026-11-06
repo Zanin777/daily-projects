@@ -15,9 +15,13 @@
     <a class="brand" href="#inicio"><span aria-hidden="true">♞&#xFE0E;</span> Aprenda Xadrez</a>
     <nav aria-label="Seções">
       <a href="#pecas">Peças</a>
+      <a href="#especiais">Especiais</a>
       <a href="#valores">Valores</a>
       <a href="#xeque">Xeque-mate</a>
       <a href="#aberturas">Aberturas</a>
+      <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="true">
+        <span aria-hidden="true">🔊</span> Som
+      </button>
     </nav>
   </header>
 
@@ -72,9 +76,47 @@
       </div>
     </section>
 
-    <section id="valores" class="section alt">
+    <section id="especiais" class="section alt">
       <div class="section-head">
         <p class="eyebrow">Lição 2</p>
+        <h2>Jogadas especiais</h2>
+        <p>Três regras que pegam muita gente de surpresa. Conhecer cada uma pode salvar (ou ganhar) uma partida.</p>
+      </div>
+
+      <div class="rules">
+        <div class="rule">
+          <h3>Roque</h3>
+          <p>O rei anda duas casas em direção a uma torre, e a torre pula para o outro lado dele. É o único lance em que duas peças se mexem.</p>
+          <ul>
+            <li>O rei e essa torre ainda não podem ter se movido.</li>
+            <li>Não pode ter peças entre eles.</li>
+            <li>O rei não pode estar em xeque nem passar ou parar numa casa atacada.</li>
+          </ul>
+        </div>
+        <div class="rule">
+          <h3>En passant</h3>
+          <p>Se um peão anda duas casas e para bem ao lado de um peão inimigo, esse peão pode capturá-lo como se ele tivesse andado só uma casa.</p>
+          <ul>
+            <li>Só vale contra um peão que acabou de andar duas casas.</li>
+            <li>Tem que ser feito no lance seguinte, ou a chance passa.</li>
+          </ul>
+        </div>
+        <div class="rule">
+          <h3>Promoção</h3>
+          <p>Quando um peão chega à última fileira, ele vira outra peça: dama, torre, bispo ou cavalo (nunca rei).</p>
+          <ul>
+            <li>Quase sempre a escolha é a dama.</li>
+            <li>Dá para ter duas damas ou mais ao mesmo tempo!</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="player" id="special-player"></div>
+    </section>
+
+    <section id="valores" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Lição 3</p>
         <h2>Quanto vale cada peça</h2>
         <p>Os pontos ajudam a decidir se uma troca é boa. Dar um cavalo (3) para ganhar uma torre (5) é bom negócio. Dar a dama (9) por um bispo (3), não.</p>
       </div>
@@ -82,9 +124,9 @@
       <p class="note-box">Os valores são um guia, não uma regra. Às vezes uma peça "barata" bem posicionada vale mais do que uma "cara" presa num canto.</p>
     </section>
 
-    <section id="xeque" class="section">
+    <section id="xeque" class="section alt">
       <div class="section-head">
-        <p class="eyebrow">Lição 3</p>
+        <p class="eyebrow">Lição 4</p>
         <h2>Xeque, xeque-mate e afogamento</h2>
         <p>O objetivo do xadrez não é capturar todas as peças: é dar <strong>xeque-mate</strong> no rei adversário.</p>
       </div>
@@ -117,9 +159,9 @@
       <div class="player" id="mate-player"></div>
     </section>
 
-    <section id="aberturas" class="section alt">
+    <section id="aberturas" class="section">
       <div class="section-head">
-        <p class="eyebrow">Lição 4</p>
+        <p class="eyebrow">Lição 5</p>
         <h2>Aberturas para começar bem</h2>
         <p>A abertura são os primeiros lances do jogo. Três ideias valem para quase todas: <strong>ocupar o centro</strong>, <strong>tirar os cavalos e bispos</strong> de casa e <strong>proteger o rei</strong>.</p>
       </div>
@@ -131,7 +173,8 @@
           <li><strong>R</strong> = Rei, <strong>D</strong> = Dama, <strong>T</strong> = Torre, <strong>B</strong> = Bispo, <strong>C</strong> = Cavalo. O peão não tem letra.</li>
           <li><strong>x</strong> = captura (ex.: <code>Cxd4</code>, o cavalo captura em d4).</li>
           <li><strong>+</strong> = xeque, <strong>#</strong> = xeque-mate.</li>
-          <li><strong>O-O</strong> = roque: o rei anda duas casas em direção à torre e a torre pula por cima dele, deixando o rei protegido no canto.</li>
+          <li><strong>O-O</strong> = roque pequeno, <strong>O-O-O</strong> = roque grande (veja a Lição 2).</li>
+          <li><strong>e.p.</strong> = en passant, <strong>=D</strong> = promoção a dama.</li>
         </ul>
       </details>
 

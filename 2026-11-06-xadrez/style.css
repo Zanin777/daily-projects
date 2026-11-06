@@ -48,6 +48,14 @@ code { background: var(--bg-alt); padding: .1em .35em; border-radius: 4px; }
 .topbar nav { display: flex; gap: clamp(10px, 2.5vw, 28px); overflow-x: auto; }
 .topbar nav a { color: var(--muted); text-decoration: none; font-weight: 500; font-size: .95rem; white-space: nowrap; }
 .topbar nav a:hover { color: var(--accent); }
+.topbar nav { align-items: center; }
+.sound-toggle {
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  font: 500 .85rem var(--sans); padding: .3em .8em; border-radius: 999px; cursor: pointer;
+  white-space: nowrap;
+}
+.sound-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.sound-toggle[aria-pressed="false"] { color: var(--muted); }
 
 /* ---------- Seções ---------- */
 .section, .hero { padding: clamp(48px, 8vw, 96px) clamp(16px, 4vw, 48px); }
@@ -114,6 +122,42 @@ button.sq:focus-visible { outline: 3px solid #1d6fd6; outline-offset: -3px; z-in
   text-shadow: 0 0 .15cqw rgba(255, 255, 255, .6), 0 .6cqw .8cqw rgba(0, 0, 0, .3);
 }
 button.sq:hover .pc { transform: scale(1.06); }
+.pc.moving { z-index: 6; }
+.pc.ghost { position: absolute; z-index: 1; }
+
+/* ---------- Menu de promoção ---------- */
+.board { position: relative; }
+.promo-backdrop {
+  position: absolute; inset: 0; z-index: 10;
+  background: rgba(30, 20, 12, .45);
+  animation: promo-fade .15s ease-out;
+}
+.promo-menu {
+  position: absolute; z-index: 11; width: 12.5%;
+  display: flex; flex-direction: column;
+  background: #fffdf8; border-radius: 1.2cqw;
+  box-shadow: 0 1.5cqw 4cqw rgba(0, 0, 0, .45);
+  overflow: hidden;
+  animation: promo-in .18s cubic-bezier(.25, .8, .3, 1);
+}
+.promo-menu.up { transform-origin: bottom center; }
+.promo-menu.down { transform-origin: top center; }
+.promo-opt {
+  aspect-ratio: 1; width: 100%;
+  display: flex; align-items: center; justify-content: center;
+  border: 0; padding: 0; background: transparent; cursor: pointer;
+  transition: background .12s;
+}
+.promo-opt .pc { pointer-events: none; transition: transform .12s; }
+.promo-opt:hover, .promo-opt:focus-visible { background: #f3e2d3; outline: none; }
+.promo-opt:hover .pc, .promo-opt:focus-visible .pc { transform: scale(1.12); }
+.promo-cancel {
+  height: 6cqw; border: 0; background: #efe6d6; color: var(--muted);
+  font: 600 3cqw var(--sans); cursor: pointer;
+}
+.promo-cancel:hover, .promo-cancel:focus-visible { background: #e2d6c2; color: var(--ink); outline: none; }
+@keyframes promo-in { from { opacity: 0; transform: scaleY(.6); } to { opacity: 1; transform: none; } }
+@keyframes promo-fade { from { opacity: 0; } to { opacity: 1; } }
 
 .sq.move::after {
   content: ""; position: absolute; width: 30%; height: 30%;
@@ -183,6 +227,9 @@ button.sq:hover .pc { transform: scale(1.06); }
 .rule { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
 .rule h3 { font-size: 1.3rem; color: var(--accent); }
 .rule p { margin: 0; }
+.rule ul { margin: .8em 0 0; padding-left: 1.1em; font-size: .92rem; color: var(--muted); }
+.rule li { margin-bottom: .25em; }
+#especiais .rules { margin-bottom: 40px; }
 .escape { background: var(--ink); color: #f5ede0; border-radius: var(--radius); padding: 24px 28px; margin-bottom: 40px; }
 .escape h3 { color: #fff; font-size: 1.3rem; }
 .escape ol { margin: 0 0 .6em; padding-left: 1.3em; }
@@ -232,9 +279,13 @@ button.sq:hover .pc { transform: scale(1.06); }
   .values { grid-template-columns: repeat(3, 1fr); }
   .rules { grid-template-columns: 1fr; }
 }
-@media (max-width: 560px) {
+@media (max-width: 760px) {
   .topbar { flex-direction: column; align-items: flex-start; gap: 6px; padding-top: 10px; padding-bottom: 10px; }
+  .topbar nav { width: 100%; scrollbar-width: none; }
+  .topbar nav::-webkit-scrollbar { display: none; }
   html { scroll-padding-top: 96px; }
+}
+@media (max-width: 560px) {
   .values { grid-template-columns: repeat(2, 1fr); }
   .board { box-shadow: 0 0 0 4px #6b4226, 0 12px 28px rgba(60, 35, 15, .3); }
   .tab small { display: none; }

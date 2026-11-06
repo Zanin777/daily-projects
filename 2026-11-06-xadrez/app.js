@@ -32,6 +32,7 @@ function createBoard(el, { flip = false, onClick } = {}) {
   el.classList.add("board");
   if (onClick) el.setAttribute("role", "grid");
   const cells = {};
+  let closeMenu = null;
   const ranks = flip ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0];
   const files = flip ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
 
@@ -53,13 +54,24 @@ function createBoard(el, { flip = false, onClick } = {}) {
   });
 
   return {
-    render(pos, marks = {}) {
+    /**
+     * Desenha a posição. `anims` aceita dois tipos de item:
+     *  - { from, to }: a peça que termina em `to` desliza a partir de `from`
+     *    (e uma peça que estava em `to` some aos poucos);
+     *  - { fade }: a peça dessa casa some aos poucos (ex.: en passant).
+     */
+    render(pos, marks = {}, anims = []) {
+      const animate = anims.length > 0 && !REDUCED_MOTION.matches;
+      const slides = anims.filter((a) => a.from);
+      const fromRects = animate ? slides.map((a) => cells[a.from].getBoundingClientRect()) : [];
+      if (animate) anims.forEach((a) => fadeOutCaptured(cells[a.fade || a.to]));
+
       for (const [s, cell] of Object.entries(cells)) {
         cell.classList.remove("move", "capture", "danger", "last", "check", "selected");
         (marks[s] || []).forEach((c) => cell.classList.add(c));
 
         const p = pos[s];
-        let pc = cell.querySelector(".pc");
+        let pc = cell.querySelector(".pc:not(.ghost)");
         if (!p) {
           pc?.remove();
           cell.setAttribute("aria-label", s);
@@ -71,10 +83,303 @@ function createBoard(el, { flip = false, onClick } = {}) {
         }
         pc.className = `pc ${p[0]}`;
         pc.textContent = glyph(p[1]);
-        cell.setAttribute("aria-label", `${NOME[p[1]]} ${COR[p[0]]} em ${s}`);
+        const cor = "QR".includes(p[1]) ? COR[p[0]].slice(0, -1) + "a" : COR[p[0]];
+        cell.setAttribute("aria-label", `${NOME[p[1]]} ${cor} em ${s}`);
+      }
+
+      if (animate) {
+        slides.forEach((a, k) => slideIn(cells[a.to], fromRects[k]));
       }
     },
+
+    /**
+     * Abre o menu de promoção sobre a casa `s` (como nos sites de xadrez:
+     * uma coluna com dama, cavalo, torre e bispo). Resolve com o tipo escolhido
+     * ("Q", "N", "R", "B") ou null se a pessoa cancelar.
+     */
+    choosePromotion(s, color) {
+      this.cancelMenu();
+      return new Promise((resolve) => {
+        const cell = cells[s];
+        const pct = (v, total) => `${(v / total) * 100}%`;
+        const growsDown = cell.offsetTop < el.clientHeight / 2;
+
+        const backdrop = document.createElement("div");
+        backdrop.className = "promo-backdrop";
+
+        const menu = document.createElement("div");
+        menu.className = `promo-menu ${growsDown ? "down" : "up"}`;
+        menu.setAttribute("role", "dialog");
+        menu.setAttribute("aria-label", "Escolha a peça da promoção");
+        menu.style.left = pct(cell.offsetLeft, el.clientWidth);
+        if (growsDown) menu.style.top = pct(cell.offsetTop, el.clientHeight);
+        else menu.style.bottom = pct(el.clientHeight - cell.offsetTop - cell.offsetHeight, el.clientHeight);
+
+        const options = ["Q", "N", "R", "B"].map((type) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "promo-opt";
+          b.title = capitalize(NOME[type]);
+          b.setAttribute("aria-label", `Promover para ${NOME[type]}`);
+          b.innerHTML = `<span class="pc ${color}">${glyph(type)}</span>`;
+          b.addEventListener("click", () => finish(type));
+          return b;
+        });
+        const cancel = document.createElement("button");
+        cancel.type = "button";
+        cancel.className = "promo-cancel";
+        cancel.setAttribute("aria-label", "Cancelar promoção");
+        cancel.textContent = "✕";
+        cancel.addEventListener("click", () => finish(null));
+        if (growsDown) menu.append(...options, cancel);
+        else menu.append(cancel, ...options.reverse());
+
+        const onKey = (e) => {
+          if (e.key === "Escape") finish(null);
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            const items = [...menu.querySelectorAll("button")];
+            const k = items.indexOf(document.activeElement);
+            items[(k + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length].focus();
+            e.preventDefault();
+          }
+        };
+        backdrop.addEventListener("click", () => finish(null));
+        document.addEventListener("keydown", onKey);
+
+        function finish(type) {
+          backdrop.remove();
+          menu.remove();
+          document.removeEventListener("keydown", onKey);
+          closeMenu = null;
+          resolve(type);
+        }
+        closeMenu = () => finish(null);
+
+        el.append(backdrop, menu);
+        options[0].focus({ preventScroll: true });
+      });
+    },
+
+    /** Fecha o menu de promoção, se estiver aberto (conta como cancelar). */
+    cancelMenu() {
+      closeMenu?.();
+    },
+
+    /** Efeito de "transformação" na peça da casa (promoção). */
+    pop(s) {
+      const pc = cells[s].querySelector(".pc:not(.ghost)");
+      if (!pc || REDUCED_MOTION.matches) return;
+      pc.animate(
+        [
+          { transform: "scale(.6)", filter: "drop-shadow(0 0 0 gold)" },
+          { transform: "scale(1.25)", filter: "drop-shadow(0 0 1.5cqw gold)", offset: 0.6 },
+          { transform: "scale(1)", filter: "drop-shadow(0 0 0 gold)" },
+        ],
+        { duration: 420, easing: "ease-out" },
+      );
+    },
   };
+}
+
+const MOVE_MS = 220;
+const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+/** Faz a peça da casa `cell` deslizar a partir do retângulo `fromRect`. */
+function slideIn(cell, fromRect) {
+  const pc = cell.querySelector(".pc:not(.ghost)");
+  if (!pc) return;
+  const to = cell.getBoundingClientRect();
+  const dx = fromRect.left - to.left;
+  const dy = fromRect.top - to.top;
+  pc.classList.add("moving");
+  const anim = pc.animate(
+    [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0, 0)" }],
+    { duration: MOVE_MS, easing: "cubic-bezier(.25, .8, .3, 1)" },
+  );
+  const done = () => pc.classList.remove("moving");
+  anim.onfinish = done;
+  anim.oncancel = done;
+}
+
+/** Se houver uma peça na casa, deixa uma cópia dela sumindo (peça capturada). */
+function fadeOutCaptured(cell) {
+  const old = cell.querySelector(".pc:not(.ghost)");
+  if (!old) return;
+  const ghost = old.cloneNode(true);
+  ghost.classList.add("ghost");
+  cell.appendChild(ghost);
+  const anim = ghost.animate(
+    [{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(.85)" }],
+    { duration: MOVE_MS, easing: "ease-in" },
+  );
+  anim.onfinish = () => ghost.remove();
+  anim.oncancel = () => ghost.remove();
+}
+
+/* ============================================================
+   Sons
+   ============================================================ */
+
+/**
+ * Quer usar seus próprios arquivos de som? Coloque-os na pasta "sons/"
+ * e escreva o caminho aqui (ex.: move: "sons/lance.mp3").
+ * Deixe vazio ("") para usar o som gerado pelo navegador.
+ * Atenção: use só sons que você tem direito de usar (seus ou de licença livre).
+ */
+const SOUND_FILES = {
+  move: "",
+  capture: "",
+  check: "",
+  promote: "",
+};
+
+const Sound = (() => {
+  let ctx = null;
+  let enabled = true;
+  try {
+    enabled = localStorage.getItem("xadrez-som") !== "off";
+  } catch { /* sem localStorage: som fica ligado */ }
+
+  const files = {};
+  for (const [kind, src] of Object.entries(SOUND_FILES)) {
+    if (src) {
+      files[kind] = new Audio(src);
+      files[kind].preload = "auto";
+    }
+  }
+
+  const audio = () => {
+    if (!ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ctx = new AC();
+    }
+    if (ctx.state === "suspended") ctx.resume();
+    return ctx;
+  };
+
+  /**
+   * "Toc" de peça de madeira no tabuleiro (síntese modal):
+   * um estalo curtíssimo de ruído (o contato) + algumas ressonâncias senoidais
+   * que morrem rápido (o corpo oco da peça e do tabuleiro).
+   */
+  function tock(c, t, { pitch = 1, gain = 0.5, bright = 1 } = {}) {
+    const out = c.createGain();
+    out.gain.value = gain;
+    const tone = c.createBiquadFilter();
+    tone.type = "lowpass";
+    tone.frequency.value = 4200 * bright;
+    tone.connect(out).connect(c.destination);
+
+    // Contato: 4 ms de ruído agudo.
+    const len = Math.floor(c.sampleRate * 0.004);
+    const buf = c.createBuffer(1, len, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let n = 0; n < len; n++) data[n] = (Math.random() * 2 - 1) * (1 - n / len) ** 2;
+    const click = c.createBufferSource();
+    click.buffer = buf;
+    const hp = c.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.value = 1800;
+    const cg = c.createGain();
+    cg.gain.value = 0.35 * bright;
+    click.connect(hp).connect(cg).connect(tone);
+    click.start(t);
+
+    // Corpo: modos de vibração de um bloco de madeira [frequência, volume, duração].
+    const modes = [[380, 1, 0.07], [960, 0.55, 0.045], [1870, 0.3, 0.03], [3150, 0.14, 0.018]];
+    for (const [f, amp, dur] of modes) {
+      const o = c.createOscillator();
+      o.type = "sine";
+      o.frequency.setValueAtTime(f * pitch * 1.02, t);
+      o.frequency.exponentialRampToValueAtTime(f * pitch, t + 0.015);
+      const g = c.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(amp, t + 0.0015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur * 2.2);
+      o.connect(g).connect(tone);
+      o.start(t);
+      o.stop(t + dur * 2.4);
+    }
+  }
+
+  // Aviso de xeque: duas notas curtas.
+  function ping(c, t) {
+    [[880, 0], [1320, 0.09]].forEach(([f, dt]) => {
+      const o = c.createOscillator();
+      o.type = "triangle";
+      o.frequency.value = f;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t + dt);
+      g.gain.exponentialRampToValueAtTime(0.14, t + dt + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.22);
+      o.connect(g).connect(c.destination);
+      o.start(t + dt);
+      o.stop(t + dt + 0.25);
+    });
+  }
+
+  // Promoção: notas subindo.
+  function chime(c, t) {
+    [[660, 0], [880, 0.07], [1320, 0.14]].forEach(([f, dt]) => {
+      const o = c.createOscillator();
+      o.type = "sine";
+      o.frequency.value = f;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t + dt);
+      g.gain.exponentialRampToValueAtTime(0.28, t + dt + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.3);
+      o.connect(g).connect(c.destination);
+      o.start(t + dt);
+      o.stop(t + dt + 0.32);
+    });
+  }
+
+  function synth(kind, check) {
+    const c = audio();
+    if (!c) return;
+    const t = c.currentTime + 0.005;
+    if (kind === "capture") {
+      // Peça batendo em peça: mais agudo e seco, com um segundo toque bem colado.
+      tock(c, t, { pitch: 1.45, gain: 0.5, bright: 1.6 });
+      tock(c, t + 0.018, { pitch: 1.05, gain: 0.36, bright: 1.2 });
+    } else if (kind === "promote") {
+      chime(c, t);
+    } else {
+      tock(c, t);
+    }
+    if (check) ping(c, t + 0.06);
+  }
+
+  function playFile(kind) {
+    const a = files[kind];
+    if (!a) return false;
+    const copy = a.cloneNode();
+    copy.play().catch(() => {});
+    return true;
+  }
+
+  return {
+    get enabled() { return enabled; },
+    toggle() {
+      enabled = !enabled;
+      try { localStorage.setItem("xadrez-som", enabled ? "on" : "off"); } catch { /* ignora */ }
+      return enabled;
+    },
+    /** kind: "move" | "capture" | "promote"; check: toca o aviso de xeque junto. */
+    play(kind, { check = false } = {}) {
+      if (!enabled) return;
+      if (check && playFile("check")) return;
+      if (playFile(kind)) return;
+      synth(kind, check);
+    },
+  };
+})();
+
+/** Toca o som quando a peça "chega" na casa (fim do deslize). */
+function playOnLanding(kind, opts) {
+  const delay = REDUCED_MOTION.matches ? 0 : MOVE_MS - 40;
+  setTimeout(() => Sound.play(kind, opts), delay);
 }
 
 function addCoord(cell, kind, text) {
@@ -241,7 +546,7 @@ const EXPLORER = {
     value: "Valor: 1 ponto",
     move: "Anda só para frente, uma casa por vez. No primeiro lance de cada peão, ele pode andar duas casas.",
     capture: "Captura diferente de como anda: uma casa na diagonal, para frente. Se tiver uma peça bem na frente dele, ele fica travado.",
-    tip: "Clique no peão de b4: ele não pode andar (o peão preto está na frente), mas pode capturar a torre em c5.",
+    tip: "Clique no peão de b4: ele não pode andar (o peão preto está na frente), mas pode capturar a torre em c5. E leve o peão de e2 até a última fileira para ver a promoção!",
   },
 };
 const PIECE_ORDER = ["K", "Q", "R", "B", "N", "P"];
@@ -270,6 +575,7 @@ function initExplorer() {
 
   function load(k) {
     key = k;
+    board.cancelMenu();
     const data = EXPLORER[k];
     pos = { ...data.setup };
     selected = data.main;
@@ -283,7 +589,7 @@ function initExplorer() {
     draw();
   }
 
-  function draw() {
+  function draw(anims = []) {
     const marks = {};
     let counter = "Clique em uma peça branca.";
     if (selected && pos[selected]) {
@@ -298,17 +604,23 @@ function initExplorer() {
         : `${capitalize(name)} em ${selected}: ${plural(moves.length, "casa livre", "casas livres")} e ${plural(caps.length, "captura", "capturas")}.`;
     }
     $("ex-counter").textContent = counter;
-    board.render(pos, marks);
+    board.render(pos, marks, anims);
   }
 
   function onClick(s) {
     if (selected) {
       const { moves, caps } = explorerMoves(pos, selected);
       if (moves.includes(s) || caps.includes(s)) {
-        pos[s] = pos[selected];
-        delete pos[selected];
+        const from = selected;
+        const before = { ...pos };
+        pos[s] = pos[from];
+        delete pos[from];
         selected = s;
-        draw();
+        draw([{ from, to: s }]);
+        playOnLanding(caps.includes(s) ? "capture" : "move");
+
+        // Promoção: peão que chega na 8ª fileira abre o menu de escolha.
+        if (pos[s] === "wP" && s[1] === "8") promote(s, from, before);
         return;
       }
     }
@@ -316,6 +628,29 @@ function initExplorer() {
       selected = s;
       draw();
     }
+  }
+
+  async function promote(s, from, before) {
+    const snapshot = pos;
+    $("ex-counter").textContent = "Promoção! Escolha em qual peça o peão vai se transformar.";
+    const type = await board.choosePromotion(s, "w");
+    if (pos !== snapshot) return; // a lição foi trocada ou recomeçada
+
+    if (!type) {
+      // Cancelou: o lance é desfeito e o peão volta para a casa de antes.
+      pos = before;
+      selected = from;
+      draw([{ from: s, to: from }]);
+      playOnLanding("move");
+      $("ex-counter").textContent = "Promoção cancelada: o peão voltou para " + from + ".";
+      return;
+    }
+    pos[s] = "w" + type;
+    draw();
+    board.pop(s);
+    Sound.play("promote");
+    const artigo = "QR".includes(type) ? "uma" : "um";
+    $("ex-counter").textContent = `Promoção! O peão virou ${artigo} ${NOME[type]}.`;
   }
 
   load("K");
@@ -347,6 +682,50 @@ function initValues() {
 const m = (uci, san, note, extra = {}) => ({ from: uci.slice(0, 2), to: uci.slice(2, 4), san, note, ...extra });
 const CASTLE_W = (note) => m("e1g1", "O-O", note, { rook: ["h1", "f1"] });
 const CASTLE_B = (note) => m("e8g8", "O-O", note, { rook: ["h8", "f8"] });
+
+const SPECIALS = [
+  {
+    tab: "Roque",
+    side: ["n", "Regra especial"],
+    title: "Roque pequeno e roque grande",
+    start: {
+      e1: "wK", a1: "wR", h1: "wR", a2: "wP", b2: "wP", c2: "wP", f2: "wP", g2: "wP", h2: "wP",
+      e8: "bK", a8: "bR", h8: "bR", a7: "bP", b7: "bP", c7: "bP", f7: "bP", g7: "bP", h7: "bP",
+    },
+    intro: "Os dois reis ainda estão no meio, com as torres nos cantos e o caminho livre. Os dois lados podem rocar.",
+    moves: [
+      CASTLE_W("<strong>Roque pequeno (O-O):</strong> o rei vai de e1 para g1 e a torre de h1 pula para f1. O rei fica escondido atrás dos peões."),
+      m("e8c8", "O-O-O", "<strong>Roque grande (O-O-O):</strong> do lado da dama. O rei vai de e8 para c8 e a torre de a8 pula para d8, já pronta para atacar no centro.", { rook: ["a8", "d8"] }),
+    ],
+  },
+  {
+    tab: "En passant",
+    side: ["n", "Regra especial"],
+    title: "En passant (\"de passagem\")",
+    start: {
+      g1: "wK", e5: "wP", a2: "wP", b2: "wP", f2: "wP", g2: "wP", h2: "wP",
+      g8: "bK", d7: "bP", a7: "bP", b7: "bP", f7: "bP", g7: "bP", h7: "bP",
+    },
+    intro: "O peão branco já chegou em e5. Repare no peão preto de d7, logo ao lado da coluna dele.",
+    moves: [
+      m("d7d5", "d5", "O peão preto anda <strong>duas casas</strong> e para em d5, bem ao lado do peão branco. Parece que escapou da captura..."),
+      m("e5d6", "exd6 e.p.", "<strong>En passant!</strong> O peão branco captura como se o preto tivesse andado só uma casa: vai para d6 e o peão de d5 sai do tabuleiro. Só dava para fazer isso agora, neste lance.", { remove: "d5" }),
+    ],
+    numberFrom: "b",
+  },
+  {
+    tab: "Promoção",
+    side: ["n", "Regra especial"],
+    title: "Promoção do peão",
+    start: { c1: "wK", b6: "wP", g8: "bK", h7: "bP" },
+    intro: "O peão branco está a duas casas do fim do tabuleiro. Se chegar lá, vira uma peça nova.",
+    moves: [
+      m("b6b7", "b7", "Falta só uma casa."),
+      m("g8f7", "Rf7", "O rei preto está longe demais para impedir."),
+      m("b7b8", "b8=D", "<strong>Promoção!</strong> O peão chegou na última fileira e virou uma <strong>dama</strong>. Poderia ter virado torre, bispo ou cavalo, mas a dama é a mais forte. Quer escolher você mesmo? Leve o peão até o fim na Lição 1.", { promote: "Q" }),
+    ],
+  },
+];
 
 const MATES = [
   {
@@ -484,6 +863,14 @@ const OPENINGS = [
   },
 ];
 
+/** Peças que se mexem num lance (no roque, o rei e a torre; no en passant, o peão que some). */
+function moveAnims(mv) {
+  const anims = [{ from: mv.from, to: mv.to }];
+  if (mv.rook) anims.push({ from: mv.rook[0], to: mv.rook[1] });
+  if (mv.remove) anims.push({ fade: mv.remove });
+  return anims;
+}
+
 function applyMove(pos, mv) {
   const next = { ...pos };
   next[mv.to] = next[mv.from];
@@ -493,6 +880,8 @@ function applyMove(pos, mv) {
     next[rt] = next[rf];
     delete next[rf];
   }
+  if (mv.remove) delete next[mv.remove];
+  if (mv.promote) next[mv.to] = next[mv.to][0] + mv.promote;
   return next;
 }
 
@@ -529,6 +918,7 @@ function createPlayer(root, lines) {
   let positions = [];
   let i = 0;
   let timer = null;
+  let renderToken = 0;
 
   lines.forEach((l, idx) => {
     const b = document.createElement("button");
@@ -554,6 +944,7 @@ function createPlayer(root, lines) {
     tag.textContent = line.side[1];
     title.textContent = line.title;
     buildList();
+    i = 0;
     go(0);
   }
 
@@ -576,6 +967,7 @@ function createPlayer(root, lines) {
   }
 
   function go(n) {
+    const prev = i;
     i = Math.max(0, Math.min(n, line.moves.length));
     const marks = {};
     const mv = line.moves[i - 1];
@@ -584,7 +976,34 @@ function createPlayer(root, lines) {
       mark(marks, mv.to, "last");
       if (mv.check) mark(marks, mv.check, "check");
     }
-    board.render(positions[i], marks);
+
+    // Só anima quando anda exatamente um lance (para frente ou para trás).
+    const token = ++renderToken;
+    let anims = [];
+    if (i === prev + 1) {
+      anims = moveAnims(mv);
+      const captured = Boolean(positions[prev][mv.to] || mv.remove);
+      playOnLanding(captured ? "capture" : "move", { check: Boolean(mv.check) });
+    } else if (i === prev - 1) {
+      const undone = line.moves[prev - 1];
+      anims = moveAnims(undone)
+        .filter((a) => a.from)
+        .map(({ from, to }) => ({ from: to, to: from }));
+      playOnLanding("move");
+    }
+
+    if (anims.length && mv?.promote && i === prev + 1) {
+      // Promoção: primeiro o peão chega na última fileira, depois vira a peça nova.
+      const arriving = { ...positions[i], [mv.to]: positions[prev][mv.from] };
+      board.render(arriving, marks, anims);
+      setTimeout(() => {
+        if (token !== renderToken) return;
+        board.render(positions[i], marks);
+        board.pop(mv.to);
+      }, REDUCED_MOTION.matches ? 0 : MOVE_MS + 150);
+    } else {
+      board.render(positions[i], marks, anims);
+    }
     note.innerHTML = mv ? mv.note : line.intro;
     list.querySelectorAll(".mv").forEach((b, k) => b.classList.toggle("active", k === i - 1));
     const atEnd = i === line.moves.length;
@@ -623,8 +1042,25 @@ function createPlayer(root, lines) {
    Início
    ============================================================ */
 
+function initSoundToggle() {
+  const btn = document.getElementById("sound-toggle");
+  const paint = () => {
+    btn.setAttribute("aria-pressed", String(Sound.enabled));
+    btn.innerHTML = `<span aria-hidden="true">${Sound.enabled ? "🔊" : "🔇"}</span> Som`;
+    btn.title = Sound.enabled ? "Desligar o som" : "Ligar o som";
+  };
+  btn.addEventListener("click", () => {
+    Sound.toggle();
+    paint();
+    Sound.play("move");
+  });
+  paint();
+}
+
 createBoard(document.getElementById("hero-board")).render(startPosition());
+initSoundToggle();
 initExplorer();
 initValues();
+createPlayer(document.getElementById("special-player"), SPECIALS);
 createPlayer(document.getElementById("mate-player"), MATES);
 createPlayer(document.getElementById("opening-player"), OPENINGS);
