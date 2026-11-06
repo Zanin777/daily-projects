@@ -1,400 +1,6 @@
 "use strict";
 
 /* ============================================================
-   Base: casas, peças e tabuleiro
-   ============================================================ */
-
-const FILES = "abcdefgh";
-const GLYPH = { K: "♚", Q: "♛", R: "♜", B: "♝", N: "♞", P: "♟" };
-const NOME = { K: "rei", Q: "dama", R: "torre", B: "bispo", N: "cavalo", P: "peão" };
-const COR = { w: "branco", b: "preto" };
-const TEXT_STYLE = "︎"; // força o símbolo em modo texto (sem emoji)
-
-const sq = (f, r) => FILES[f] + (r + 1);
-const fr = (s) => [FILES.indexOf(s[0]), Number(s[1]) - 1];
-const inBoard = (f, r) => f >= 0 && f < 8 && r >= 0 && r < 8;
-const glyph = (type) => GLYPH[type] + TEXT_STYLE;
-
-function startPosition() {
-  const pos = {};
-  const back = "RNBQKBNR";
-  for (let f = 0; f < 8; f++) {
-    pos[sq(f, 0)] = "w" + back[f];
-    pos[sq(f, 1)] = "wP";
-    pos[sq(f, 6)] = "bP";
-    pos[sq(f, 7)] = "b" + back[f];
-  }
-  return pos;
-}
-
-function createBoard(el, { flip = false, onClick } = {}) {
-  el.innerHTML = "";
-  el.classList.add("board");
-  if (onClick) el.setAttribute("role", "grid");
-  const cells = {};
-  let closeMenu = null;
-  const ranks = flip ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0];
-  const files = flip ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
-
-  ranks.forEach((r, ri) => {
-    files.forEach((f, fi) => {
-      const s = sq(f, r);
-      const cell = document.createElement(onClick ? "button" : "div");
-      if (onClick) {
-        cell.type = "button";
-        cell.addEventListener("click", () => onClick(s));
-      }
-      cell.className = `sq ${(f + r) % 2 ? "light" : "dark"}`;
-      cell.dataset.sq = s;
-      if (fi === 0) addCoord(cell, "rank", r + 1);
-      if (ri === 7) addCoord(cell, "file", FILES[f]);
-      el.appendChild(cell);
-      cells[s] = cell;
-    });
-  });
-
-  return {
-    /**
-     * Desenha a posição. `anims` aceita dois tipos de item:
-     *  - { from, to }: a peça que termina em `to` desliza a partir de `from`
-     *    (e uma peça que estava em `to` some aos poucos);
-     *  - { fade }: a peça dessa casa some aos poucos (ex.: en passant).
-     */
-    render(pos, marks = {}, anims = []) {
-      const animate = anims.length > 0 && !REDUCED_MOTION.matches;
-      const slides = anims.filter((a) => a.from);
-      const fromRects = animate ? slides.map((a) => cells[a.from].getBoundingClientRect()) : [];
-      if (animate) anims.forEach((a) => fadeOutCaptured(cells[a.fade || a.to]));
-
-      for (const [s, cell] of Object.entries(cells)) {
-        cell.classList.remove("move", "capture", "danger", "last", "check", "selected");
-        (marks[s] || []).forEach((c) => cell.classList.add(c));
-
-        const p = pos[s];
-        let pc = cell.querySelector(".pc:not(.ghost)");
-        if (!p) {
-          pc?.remove();
-          cell.setAttribute("aria-label", s);
-          continue;
-        }
-        if (!pc) {
-          pc = document.createElement("span");
-          cell.appendChild(pc);
-        }
-        pc.className = `pc ${p[0]}`;
-        pc.textContent = glyph(p[1]);
-        const cor = "QR".includes(p[1]) ? COR[p[0]].slice(0, -1) + "a" : COR[p[0]];
-        cell.setAttribute("aria-label", `${NOME[p[1]]} ${cor} em ${s}`);
-      }
-
-      if (animate) {
-        slides.forEach((a, k) => slideIn(cells[a.to], fromRects[k]));
-      }
-    },
-
-    /**
-     * Abre o menu de promoção sobre a casa `s` (como nos sites de xadrez:
-     * uma coluna com dama, cavalo, torre e bispo). Resolve com o tipo escolhido
-     * ("Q", "N", "R", "B") ou null se a pessoa cancelar.
-     */
-    choosePromotion(s, color) {
-      this.cancelMenu();
-      return new Promise((resolve) => {
-        const cell = cells[s];
-        const pct = (v, total) => `${(v / total) * 100}%`;
-        const growsDown = cell.offsetTop < el.clientHeight / 2;
-
-        const backdrop = document.createElement("div");
-        backdrop.className = "promo-backdrop";
-
-        const menu = document.createElement("div");
-        menu.className = `promo-menu ${growsDown ? "down" : "up"}`;
-        menu.setAttribute("role", "dialog");
-        menu.setAttribute("aria-label", "Escolha a peça da promoção");
-        menu.style.left = pct(cell.offsetLeft, el.clientWidth);
-        if (growsDown) menu.style.top = pct(cell.offsetTop, el.clientHeight);
-        else menu.style.bottom = pct(el.clientHeight - cell.offsetTop - cell.offsetHeight, el.clientHeight);
-
-        const options = ["Q", "N", "R", "B"].map((type) => {
-          const b = document.createElement("button");
-          b.type = "button";
-          b.className = "promo-opt";
-          b.title = capitalize(NOME[type]);
-          b.setAttribute("aria-label", `Promover para ${NOME[type]}`);
-          b.innerHTML = `<span class="pc ${color}">${glyph(type)}</span>`;
-          b.addEventListener("click", () => finish(type));
-          return b;
-        });
-        const cancel = document.createElement("button");
-        cancel.type = "button";
-        cancel.className = "promo-cancel";
-        cancel.setAttribute("aria-label", "Cancelar promoção");
-        cancel.textContent = "✕";
-        cancel.addEventListener("click", () => finish(null));
-        if (growsDown) menu.append(...options, cancel);
-        else menu.append(cancel, ...options.reverse());
-
-        const onKey = (e) => {
-          if (e.key === "Escape") finish(null);
-          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-            const items = [...menu.querySelectorAll("button")];
-            const k = items.indexOf(document.activeElement);
-            items[(k + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length].focus();
-            e.preventDefault();
-          }
-        };
-        backdrop.addEventListener("click", () => finish(null));
-        document.addEventListener("keydown", onKey);
-
-        function finish(type) {
-          backdrop.remove();
-          menu.remove();
-          document.removeEventListener("keydown", onKey);
-          closeMenu = null;
-          resolve(type);
-        }
-        closeMenu = () => finish(null);
-
-        el.append(backdrop, menu);
-        options[0].focus({ preventScroll: true });
-      });
-    },
-
-    /** Fecha o menu de promoção, se estiver aberto (conta como cancelar). */
-    cancelMenu() {
-      closeMenu?.();
-    },
-
-    /** Efeito de "transformação" na peça da casa (promoção). */
-    pop(s) {
-      const pc = cells[s].querySelector(".pc:not(.ghost)");
-      if (!pc || REDUCED_MOTION.matches) return;
-      pc.animate(
-        [
-          { transform: "scale(.6)", filter: "drop-shadow(0 0 0 gold)" },
-          { transform: "scale(1.25)", filter: "drop-shadow(0 0 1.5cqw gold)", offset: 0.6 },
-          { transform: "scale(1)", filter: "drop-shadow(0 0 0 gold)" },
-        ],
-        { duration: 420, easing: "ease-out" },
-      );
-    },
-  };
-}
-
-const MOVE_MS = 220;
-const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-/** Faz a peça da casa `cell` deslizar a partir do retângulo `fromRect`. */
-function slideIn(cell, fromRect) {
-  const pc = cell.querySelector(".pc:not(.ghost)");
-  if (!pc) return;
-  const to = cell.getBoundingClientRect();
-  const dx = fromRect.left - to.left;
-  const dy = fromRect.top - to.top;
-  pc.classList.add("moving");
-  const anim = pc.animate(
-    [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0, 0)" }],
-    { duration: MOVE_MS, easing: "cubic-bezier(.25, .8, .3, 1)" },
-  );
-  const done = () => pc.classList.remove("moving");
-  anim.onfinish = done;
-  anim.oncancel = done;
-}
-
-/** Se houver uma peça na casa, deixa uma cópia dela sumindo (peça capturada). */
-function fadeOutCaptured(cell) {
-  const old = cell.querySelector(".pc:not(.ghost)");
-  if (!old) return;
-  const ghost = old.cloneNode(true);
-  ghost.classList.add("ghost");
-  cell.appendChild(ghost);
-  const anim = ghost.animate(
-    [{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(.85)" }],
-    { duration: MOVE_MS, easing: "ease-in" },
-  );
-  anim.onfinish = () => ghost.remove();
-  anim.oncancel = () => ghost.remove();
-}
-
-/* ============================================================
-   Sons
-   ============================================================ */
-
-/**
- * Quer usar seus próprios arquivos de som? Coloque-os na pasta "sons/"
- * e escreva o caminho aqui (ex.: move: "sons/lance.mp3").
- * Deixe vazio ("") para usar o som gerado pelo navegador.
- * Atenção: use só sons que você tem direito de usar (seus ou de licença livre).
- */
-const SOUND_FILES = {
-  move: "",
-  capture: "",
-  check: "",
-  promote: "",
-};
-
-const Sound = (() => {
-  let ctx = null;
-  let enabled = true;
-  try {
-    enabled = localStorage.getItem("xadrez-som") !== "off";
-  } catch { /* sem localStorage: som fica ligado */ }
-
-  const files = {};
-  for (const [kind, src] of Object.entries(SOUND_FILES)) {
-    if (src) {
-      files[kind] = new Audio(src);
-      files[kind].preload = "auto";
-    }
-  }
-
-  const audio = () => {
-    if (!ctx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return null;
-      ctx = new AC();
-    }
-    if (ctx.state === "suspended") ctx.resume();
-    return ctx;
-  };
-
-  /**
-   * "Toc" de peça de madeira no tabuleiro (síntese modal):
-   * um estalo curtíssimo de ruído (o contato) + algumas ressonâncias senoidais
-   * que morrem rápido (o corpo oco da peça e do tabuleiro).
-   */
-  function tock(c, t, { pitch = 1, gain = 0.5, bright = 1 } = {}) {
-    const out = c.createGain();
-    out.gain.value = gain;
-    const tone = c.createBiquadFilter();
-    tone.type = "lowpass";
-    tone.frequency.value = 4200 * bright;
-    tone.connect(out).connect(c.destination);
-
-    // Contato: 4 ms de ruído agudo.
-    const len = Math.floor(c.sampleRate * 0.004);
-    const buf = c.createBuffer(1, len, c.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let n = 0; n < len; n++) data[n] = (Math.random() * 2 - 1) * (1 - n / len) ** 2;
-    const click = c.createBufferSource();
-    click.buffer = buf;
-    const hp = c.createBiquadFilter();
-    hp.type = "highpass";
-    hp.frequency.value = 1800;
-    const cg = c.createGain();
-    cg.gain.value = 0.35 * bright;
-    click.connect(hp).connect(cg).connect(tone);
-    click.start(t);
-
-    // Corpo: modos de vibração de um bloco de madeira [frequência, volume, duração].
-    const modes = [[380, 1, 0.07], [960, 0.55, 0.045], [1870, 0.3, 0.03], [3150, 0.14, 0.018]];
-    for (const [f, amp, dur] of modes) {
-      const o = c.createOscillator();
-      o.type = "sine";
-      o.frequency.setValueAtTime(f * pitch * 1.02, t);
-      o.frequency.exponentialRampToValueAtTime(f * pitch, t + 0.015);
-      const g = c.createGain();
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(amp, t + 0.0015);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dur * 2.2);
-      o.connect(g).connect(tone);
-      o.start(t);
-      o.stop(t + dur * 2.4);
-    }
-  }
-
-  // Aviso de xeque: duas notas curtas.
-  function ping(c, t) {
-    [[880, 0], [1320, 0.09]].forEach(([f, dt]) => {
-      const o = c.createOscillator();
-      o.type = "triangle";
-      o.frequency.value = f;
-      const g = c.createGain();
-      g.gain.setValueAtTime(0.0001, t + dt);
-      g.gain.exponentialRampToValueAtTime(0.14, t + dt + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.22);
-      o.connect(g).connect(c.destination);
-      o.start(t + dt);
-      o.stop(t + dt + 0.25);
-    });
-  }
-
-  // Promoção: notas subindo.
-  function chime(c, t) {
-    [[660, 0], [880, 0.07], [1320, 0.14]].forEach(([f, dt]) => {
-      const o = c.createOscillator();
-      o.type = "sine";
-      o.frequency.value = f;
-      const g = c.createGain();
-      g.gain.setValueAtTime(0.0001, t + dt);
-      g.gain.exponentialRampToValueAtTime(0.28, t + dt + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.3);
-      o.connect(g).connect(c.destination);
-      o.start(t + dt);
-      o.stop(t + dt + 0.32);
-    });
-  }
-
-  function synth(kind, check) {
-    const c = audio();
-    if (!c) return;
-    const t = c.currentTime + 0.005;
-    if (kind === "capture") {
-      // Peça batendo em peça: mais agudo e seco, com um segundo toque bem colado.
-      tock(c, t, { pitch: 1.45, gain: 0.5, bright: 1.6 });
-      tock(c, t + 0.018, { pitch: 1.05, gain: 0.36, bright: 1.2 });
-    } else if (kind === "promote") {
-      chime(c, t);
-    } else {
-      tock(c, t);
-    }
-    if (check) ping(c, t + 0.06);
-  }
-
-  function playFile(kind) {
-    const a = files[kind];
-    if (!a) return false;
-    const copy = a.cloneNode();
-    copy.play().catch(() => {});
-    return true;
-  }
-
-  return {
-    get enabled() { return enabled; },
-    toggle() {
-      enabled = !enabled;
-      try { localStorage.setItem("xadrez-som", enabled ? "on" : "off"); } catch { /* ignora */ }
-      return enabled;
-    },
-    /** kind: "move" | "capture" | "promote"; check: toca o aviso de xeque junto. */
-    play(kind, { check = false } = {}) {
-      if (!enabled) return;
-      if (check && playFile("check")) return;
-      if (playFile(kind)) return;
-      synth(kind, check);
-    },
-  };
-})();
-
-/** Toca o som quando a peça "chega" na casa (fim do deslize). */
-function playOnLanding(kind, opts) {
-  const delay = REDUCED_MOTION.matches ? 0 : MOVE_MS - 40;
-  setTimeout(() => Sound.play(kind, opts), delay);
-}
-
-function addCoord(cell, kind, text) {
-  const span = document.createElement("span");
-  span.className = `coord ${kind}`;
-  span.textContent = text;
-  span.setAttribute("aria-hidden", "true");
-  cell.appendChild(span);
-}
-
-function mark(marks, s, cls) {
-  (marks[s] ||= []).push(cls);
-}
-
-/* ============================================================
    Regras de movimento
    ============================================================ */
 
@@ -496,7 +102,7 @@ function explorerMoves(pos, s) {
 }
 
 /* ============================================================
-   Lição 1: explorador de peças
+   Lição 2: explorador de peças
    ============================================================ */
 
 const EXPLORER = {
@@ -656,11 +262,9 @@ function initExplorer() {
   load("K");
 }
 
-const capitalize = (t) => t[0].toUpperCase() + t.slice(1);
-const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 /* ============================================================
-   Lição 2: valores
+   Lição 4: valores
    ============================================================ */
 
 function initValues() {
@@ -722,7 +326,7 @@ const SPECIALS = [
     moves: [
       m("b6b7", "b7", "Falta só uma casa."),
       m("g8f7", "Rf7", "O rei preto está longe demais para impedir."),
-      m("b7b8", "b8=D", "<strong>Promoção!</strong> O peão chegou na última fileira e virou uma <strong>dama</strong>. Poderia ter virado torre, bispo ou cavalo, mas a dama é a mais forte. Quer escolher você mesmo? Leve o peão até o fim na Lição 1.", { promote: "Q" }),
+      m("b7b8", "b8=D", "<strong>Promoção!</strong> O peão chegou na última fileira e virou uma <strong>dama</strong>. Poderia ter virado torre, bispo ou cavalo, mas a dama é a mais forte. Quer escolher você mesmo? Leve o peão até o fim na Lição 2.", { promote: "Q" }),
     ],
   },
 ];
@@ -737,6 +341,19 @@ const MATES = [
     moves: [
       m("a1e1", "Te1+", "<strong>Xeque!</strong> A torre ataca o rei pela coluna e. As pretas são obrigadas a resolver isso agora.", { check: "e8" }),
       m("e8d7", "Rd7", "O rei <strong>fugiu</strong> para d7, uma casa que a torre não ataca. Saiu do xeque."),
+    ],
+  },
+  {
+    tab: "Mate do Louco",
+    side: ["n", "O mais rápido"],
+    title: "Mate do Louco",
+    start: "start",
+    intro: "A partida mais curta possível: xeque-mate no 2º lance! Só acontece se as brancas cometerem dois erros seguidos.",
+    moves: [
+      m("f2f3", "f3", "Lance fraco: abre a diagonal que protege o rei branco."),
+      m("e7e5", "e5", "As pretas abrem caminho para a dama."),
+      m("g2g4", "g4??", "<strong>Erro grave!</strong> Agora a diagonal entre h4 e e1 está toda aberta."),
+      m("d8h4", "Dh4#", "<strong>Xeque-mate!</strong> A dama ataca o rei pela diagonal e nada pode bloquear em g3 ou f2. Fim de jogo em 2 lances.", { check: "e1" }),
     ],
   },
   {
@@ -859,6 +476,62 @@ const OPENINGS = [
       m("c8f5", "Bf5", "A grande vantagem da Caro-Kann: o bispo de c8 sai <em>antes</em> de o peão ir para e6 e fechar o caminho dele."),
       m("e4g3", "Cg3", "O cavalo ataca o bispo."),
       m("f5g6", "Bg6", "O bispo recua e continua ativo. O plano das pretas: e6, Cf6 e roque, com uma posição muito sólida."),
+    ],
+  },
+];
+
+const TACTICS = [
+  {
+    tab: "Garfo",
+    side: ["n", "Tática"],
+    title: "Garfo: duas peças atacadas de uma vez",
+    start: { g1: "wK", b5: "wN", f2: "wP", g2: "wP", h2: "wP", e8: "bK", a8: "bR", f7: "bP", g7: "bP", h7: "bP" },
+    intro: "O cavalo branco prepara um golpe. Repare no rei em e8 e na torre em a8: um cavalo em c7 atacaria os dois.",
+    moves: [
+      m("b5c7", "Cc7+", "<strong>Garfo!</strong> O cavalo dá xeque no rei e, ao mesmo tempo, ataca a torre de a8. As pretas só conseguem salvar um: o rei.", { check: "e8" }),
+      m("e8e7", "Re7", "O rei sai do xeque..."),
+      m("c7a8", "Cxa8", "...e o cavalo captura a torre. As brancas ganharam 5 pontos de graça."),
+    ],
+  },
+  {
+    tab: "Cravada",
+    side: ["n", "Tática"],
+    title: "Cravada: a peça que não pode sair",
+    start: { g1: "wK", f1: "wB", d4: "wP", f2: "wP", g2: "wP", h2: "wP", e8: "bK", c6: "bN", a7: "bP", g7: "bP", h7: "bP" },
+    intro: "O cavalo preto em c6 está na mesma diagonal que o rei em e8. O bispo branco vai aproveitar isso.",
+    moves: [
+      m("f1b5", "Bb5", "<strong>Cravada!</strong> O bispo ataca o cavalo, e atrás dele está o rei. O cavalo não pode sair: deixaria o rei em xeque, e isso é proibido."),
+      m("h7h6", "h6", "As pretas não percebem o perigo."),
+      m("d4d5", "d5", "Agora o peão ataca o cavalo cravado. Ele não tem como fugir!"),
+      m("g7g5", "g5", "Não existe jeito de salvar o cavalo."),
+      m("d5c6", "dxc6", "O peão captura o cavalo. A cravada ganhou uma peça inteira."),
+    ],
+  },
+  {
+    tab: "Espeto",
+    side: ["n", "Tática"],
+    title: "Espeto: ataque em fila",
+    start: { g1: "wK", a1: "wR", f2: "wP", g2: "wP", h2: "wP", c7: "bK", h7: "bQ", f5: "bP", g6: "bP" },
+    intro: "O rei e a dama pretos estão na mesma fileira (a 7ª). A torre branca vai atacar os dois em fila.",
+    moves: [
+      m("a1a7", "Ta7+", "<strong>Espeto!</strong> A torre dá xeque no rei pela 7ª fileira. Atrás dele, na mesma linha, está a dama.", { check: "c7" }),
+      m("c7d6", "Rd6", "O rei é obrigado a sair da linha..."),
+      m("a7h7", "Txh7", "...e a torre captura a dama que estava atrás. É como um garfo em fila: ataca a peça da frente para pegar a de trás."),
+    ],
+  },
+  {
+    tab: "Ataque descoberto",
+    side: ["n", "Tática"],
+    title: "Ataque (xeque) descoberto",
+    start: {
+      g1: "wK", e1: "wR", e5: "wN", f2: "wP", g2: "wP", h2: "wP",
+      e8: "bK", d8: "bQ", a7: "bP", b7: "bP", f7: "bP", g7: "bP", h7: "bP",
+    },
+    intro: "A torre branca em e1 mira o rei preto, mas o cavalo em e5 está no caminho. E se o cavalo sair... atacando alguém?",
+    moves: [
+      m("e5c6", "Cc6+", "<strong>Xeque descoberto!</strong> O cavalo sai da frente e a torre de e1 agora dá xeque no rei. Ao mesmo tempo, o cavalo ataca a dama em d8.", { check: "e8" }),
+      m("e8f8", "Rf8", "As pretas precisam cuidar do xeque primeiro..."),
+      m("c6d8", "Cxd8", "...e o cavalo captura a dama. Um lance só, dois ataques!"),
     ],
   },
 ];
@@ -1039,28 +712,200 @@ function createPlayer(root, lines) {
 }
 
 /* ============================================================
-   Início
+   Topo: a Abertura Italiana se jogando sozinha, sem som
    ============================================================ */
 
-function initSoundToggle() {
-  const btn = document.getElementById("sound-toggle");
-  const paint = () => {
-    btn.setAttribute("aria-pressed", String(Sound.enabled));
-    btn.innerHTML = `<span aria-hidden="true">${Sound.enabled ? "🔊" : "🔇"}</span> Som`;
-    btn.title = Sound.enabled ? "Desligar o som" : "Ligar o som";
+function initHero() {
+  const el = document.getElementById("hero-board");
+  const label = document.getElementById("hero-move");
+  const board = createBoard(el);
+  const line = OPENINGS[0];
+  const positions = [startPosition()];
+  line.moves.forEach((mv) => positions.push(applyMove(positions[positions.length - 1], mv)));
+
+  let i = 0;
+  let visible = true;
+  const show = (anims = []) => {
+    const mv = line.moves[i - 1];
+    const marks = {};
+    if (mv) {
+      mark(marks, mv.from, "last");
+      mark(marks, mv.to, "last");
+      const num = Math.floor((i - 1) / 2) + 1;
+      label.textContent = (i - 1) % 2 === 0 ? `${num}. ${mv.san}` : `${num}... ${mv.san}`;
+    } else {
+      label.textContent = "posição inicial";
+    }
+    board.render(positions[i], marks, anims);
   };
-  btn.addEventListener("click", () => {
-    Sound.toggle();
+  show();
+  if (REDUCED_MOTION.matches) return;
+
+  // Só anima quando o topo está visível e a aba está aberta.
+  new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }).observe(el);
+  const tick = () => {
+    if (visible && !document.hidden) {
+      if (i < line.moves.length) {
+        i++;
+        show(moveAnims(line.moves[i - 1]));
+      } else {
+        i = 0;
+        el.classList.add("fading");
+        setTimeout(() => { show(); el.classList.remove("fading"); }, 350);
+      }
+    }
+    setTimeout(tick, i === line.moves.length ? 3200 : 1500);
+  };
+  setTimeout(tick, 1400);
+}
+
+/* ============================================================
+   Lição 1: treino de coordenadas
+   ============================================================ */
+
+function initCoordTrainer() {
+  const el = document.getElementById("coord-board");
+  const $ = (id) => document.getElementById(id);
+  let hits = 0;
+  let streak = 0;
+  let best = 0;
+  try { best = Number(localStorage.getItem("xadrez-coord-recorde")) || 0; } catch { /* ignora */ }
+  let target = "";
+
+  const board = createBoard(el, { onClick });
+  board.render(startPosition());
+
+  const flash = (s, cls) => {
+    const cell = el.querySelector(`[data-sq="${s}"]`);
+    cell.classList.remove("good", "bad");
+    void cell.offsetWidth; // reinicia a animação
+    cell.classList.add(cls);
+    setTimeout(() => cell.classList.remove(cls), 700);
+  };
+
+  function next() {
+    let s;
+    do s = sq(Math.floor(Math.random() * 8), Math.floor(Math.random() * 8)); while (s === target);
+    target = s;
+    const t = $("coord-target");
+    t.textContent = s;
+    t.classList.remove("pop");
+    void t.offsetWidth;
+    t.classList.add("pop");
+  }
+
+  function paint() {
+    $("coord-hits").textContent = hits;
+    $("coord-streak").textContent = streak;
+    $("coord-best").textContent = best;
+  }
+
+  function onClick(s) {
+    const fb = $("coord-feedback");
+    if (s === target) {
+      hits++;
+      streak++;
+      if (streak > best) {
+        best = streak;
+        try { localStorage.setItem("xadrez-coord-recorde", String(best)); } catch { /* ignora */ }
+      }
+      flash(s, "good");
+      Sound.play("move");
+      fb.textContent = streak >= 5 && streak % 5 === 0 ? `🔥 ${streak} seguidas!` : "✓ Isso mesmo!";
+      fb.className = "coord-feedback ok";
+      next();
+    } else {
+      streak = 0;
+      flash(s, "bad");
+      fb.textContent = `Essa é a casa ${s}. Procure a ${target}!`;
+      fb.className = "coord-feedback no";
+    }
     paint();
-    Sound.play("move");
-  });
+  }
+
+  $("coord-labels").addEventListener("change", (e) => el.classList.toggle("no-coords", !e.target.checked));
+  next();
   paint();
 }
 
-createBoard(document.getElementById("hero-board")).render(startPosition());
+/* ============================================================
+   Efeitos ao rolar a página
+   ============================================================ */
+
+/** Os blocos aparecem suavemente quando entram na tela. */
+function initReveal() {
+  if (REDUCED_MOTION.matches || !("IntersectionObserver" in window)) return;
+  const groups = [".section-head", ".lesson", ".player", ".escape", ".notation", ".note-box", ".tips", ".facts-title", ".cta-inner"];
+  const staggered = [".rules", ".values", ".end-grid", ".facts"];
+  const items = [];
+  document.querySelectorAll(groups.join(",")).forEach((e) => items.push(e));
+  document.querySelectorAll(staggered.join(",")).forEach((parent) => {
+    [...parent.children].forEach((child, k) => {
+      child.style.setProperty("--delay", `${k * 90}ms`);
+      items.push(child);
+    });
+  });
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) {
+        e.target.classList.add("in");
+        io.unobserve(e.target);
+      }
+    }
+  }, { rootMargin: "0px 0px -60px 0px", threshold: 0.08 });
+  items.forEach((e) => {
+    e.classList.add("reveal");
+    io.observe(e);
+  });
+}
+
+/** Barra de progresso, menu marcando a seção atual e botão de voltar ao topo. */
+function initScrollEffects() {
+  const bar = document.getElementById("progress-bar");
+  const toTop = document.getElementById("to-top");
+  const links = [...document.querySelectorAll('.topbar nav a[href^="#"]')];
+
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    const max = document.documentElement.scrollHeight - innerHeight;
+    bar.style.transform = `scaleX(${max > 0 ? scrollY / max : 0})`;
+    toTop.hidden = scrollY < 900;
+  };
+  addEventListener("scroll", () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  }, { passive: true });
+  update();
+
+  toTop.addEventListener("click", () => scrollTo({ top: 0, behavior: REDUCED_MOTION.matches ? "auto" : "smooth" }));
+
+  if ("IntersectionObserver" in window) {
+    const spy = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        links.forEach((a) => a.classList.toggle("active", a.getAttribute("href") === `#${e.target.id}`));
+      }
+    }, { rootMargin: "-45% 0px -50% 0px" });
+    document.querySelectorAll("main > section[id]").forEach((s) => spy.observe(s));
+  }
+}
+
+/* ============================================================
+   Início
+   ============================================================ */
+
+
 initSoundToggle();
+initHero();
+initCoordTrainer();
 initExplorer();
 initValues();
 createPlayer(document.getElementById("special-player"), SPECIALS);
 createPlayer(document.getElementById("mate-player"), MATES);
+createPlayer(document.getElementById("tactic-player"), TACTICS);
 createPlayer(document.getElementById("opening-player"), OPENINGS);
+initReveal();
+initScrollEffects();

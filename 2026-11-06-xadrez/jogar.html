@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jogar Xadrez</title>
+  <meta name="description" content="Jogue xadrez contra o computador ou com um amigo, com todas as regras.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="play-page">
+  <header class="topbar">
+    <a class="brand" href="index.html"><span aria-hidden="true">♞&#xFE0E;</span> Aprenda Xadrez</a>
+    <nav aria-label="Navegação">
+      <a href="index.html">← Voltar às lições</a>
+      <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="true">
+        <span aria-hidden="true">🔊</span> Som
+      </button>
+    </nav>
+  </header>
+
+  <main class="play">
+    <section class="play-board" aria-label="Partida">
+      <div class="player-bar" id="bar-top">
+        <span class="avatar" aria-hidden="true"></span>
+        <span class="pname"></span>
+        <span class="captured" aria-label="Peças capturadas"></span>
+        <span class="adv"></span>
+      </div>
+
+      <div class="play-wrap">
+        <div class="board" id="play-board" aria-label="Tabuleiro da partida"></div>
+        <canvas class="confetti" id="confetti" aria-hidden="true"></canvas>
+        <div class="game-over" id="game-over" hidden>
+          <div class="go-card" role="dialog" aria-labelledby="go-title">
+            <div class="go-icon" id="go-icon" aria-hidden="true"></div>
+            <h2 id="go-title"></h2>
+            <p id="go-text"></p>
+            <div class="go-actions">
+              <button class="btn" id="go-again" type="button">Jogar de novo</button>
+              <button class="btn btn-ghost" id="go-close" type="button">Ver o tabuleiro</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="player-bar" id="bar-bottom">
+        <span class="avatar" aria-hidden="true"></span>
+        <span class="pname"></span>
+        <span class="captured" aria-label="Peças capturadas"></span>
+        <span class="adv"></span>
+      </div>
+    </section>
+
+    <aside class="panel play-panel">
+      <p class="play-status" id="status" aria-live="polite"></p>
+
+      <div class="setting">
+        <span class="setting-label">Modo</span>
+        <div class="seg" role="radiogroup" aria-label="Modo" data-setting="mode">
+          <button type="button" role="radio" data-value="ai">🤖 Contra o computador</button>
+          <button type="button" role="radio" data-value="2p">👥 2 jogadores</button>
+        </div>
+      </div>
+      <div class="setting" data-ai-only>
+        <span class="setting-label">Você joga de</span>
+        <div class="seg" role="radiogroup" aria-label="Cor" data-setting="color">
+          <button type="button" role="radio" data-value="w">Brancas</button>
+          <button type="button" role="radio" data-value="b">Pretas</button>
+          <button type="button" role="radio" data-value="random">Sortear</button>
+        </div>
+      </div>
+      <div class="setting" data-ai-only>
+        <span class="setting-label">Nível</span>
+        <div class="seg" role="radiogroup" aria-label="Nível" data-setting="level">
+          <button type="button" role="radio" data-value="1">Fácil</button>
+          <button type="button" role="radio" data-value="2">Médio</button>
+          <button type="button" role="radio" data-value="3">Difícil</button>
+        </div>
+      </div>
+      <div class="setting">
+        <span class="setting-label">Tabuleiro</span>
+        <div class="seg" role="radiogroup" aria-label="Cores do tabuleiro" data-setting="theme">
+          <button type="button" role="radio" data-value="madeira"><i class="swatch madeira"></i>Madeira</button>
+          <button type="button" role="radio" data-value="verde"><i class="swatch verde"></i>Verde</button>
+          <button type="button" role="radio" data-value="azul"><i class="swatch azul"></i>Azul</button>
+        </div>
+      </div>
+      <p class="setting-note" id="setting-note" hidden>Essas opções valem a partir do próximo jogo. Clique em <strong>Novo jogo</strong>.</p>
+
+      <div class="play-actions">
+        <button class="btn" id="btn-new" type="button">Novo jogo</button>
+        <button class="ctrl" id="btn-undo" type="button" title="Desfazer o último lance">↶ Desfazer</button>
+        <button class="ctrl" id="btn-flip" type="button" title="Virar o tabuleiro">⇅ Virar</button>
+        <button class="ctrl" id="btn-hint" type="button" title="Mostrar um bom lance">💡 Dica</button>
+        <button class="ctrl" id="btn-resign" type="button" title="Desistir da partida">🏳 Desistir</button>
+      </div>
+
+      <h3 class="moves-title">Lances</h3>
+      <ol class="move-table" id="move-list" aria-label="Lista de lances"></ol>
+      <p class="play-help">Arraste uma peça ou clique nela e depois na casa de destino.</p>
+    </aside>
+  </main>
+
+  <script src="board.js"></script>
+  <script src="engine.js"></script>
+  <script src="jogar.js"></script>
+</body>
+</html>

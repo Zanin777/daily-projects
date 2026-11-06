@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Aprenda Xadrez</title>
-  <meta name="description" content="Aprenda a jogar xadrez: movimento das peças, valores, xeque-mate e aberturas, tudo interativo.">
+  <meta name="description" content="Aprenda a jogar xadrez do zero: tabuleiro, peças, jogadas especiais, xeque-mate, táticas e aberturas, tudo interativo. E depois jogue uma partida completa.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -14,34 +14,95 @@
   <header class="topbar">
     <a class="brand" href="#inicio"><span aria-hidden="true">♞&#xFE0E;</span> Aprenda Xadrez</a>
     <nav aria-label="Seções">
+      <a href="#basico">Básico</a>
       <a href="#pecas">Peças</a>
       <a href="#especiais">Especiais</a>
-      <a href="#valores">Valores</a>
       <a href="#xeque">Xeque-mate</a>
+      <a href="#taticas">Táticas</a>
       <a href="#aberturas">Aberturas</a>
+      <a class="nav-play" href="jogar.html">♟&#xFE0E; Jogar</a>
       <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="true">
         <span aria-hidden="true">🔊</span> Som
       </button>
     </nav>
+    <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
   </header>
 
   <main>
     <section id="inicio" class="hero">
+      <span class="hero-deco" aria-hidden="true">♞&#xFE0E;</span>
       <div class="hero-text">
         <p class="eyebrow">Do zero ao primeiro jogo</p>
         <h1>Aprenda xadrez <em>mexendo</em> nas peças.</h1>
-        <p class="lead">Cada lição tem um tabuleiro de verdade: clique nas peças, veja onde elas podem ir, onde podem capturar e acompanhe aberturas lance a lance.</p>
-        <a class="btn" href="#pecas">Começar pelas peças →</a>
+        <p class="lead">Cada lição tem um tabuleiro de verdade: clique nas peças, veja onde elas podem ir e acompanhe jogadas lance a lance. No final, jogue uma partida completa.</p>
+        <div class="hero-actions">
+          <a class="btn" href="#basico">Começar a aprender →</a>
+          <a class="btn btn-ghost" href="jogar.html">♟&#xFE0E; Jogar agora</a>
+        </div>
+        <ul class="hero-stats">
+          <li><strong>8</strong> lições</li>
+          <li><strong>16</strong> exemplos animados</li>
+          <li><strong>1</strong> partida completa</li>
+        </ul>
       </div>
       <div class="hero-board">
-        <div class="board" id="hero-board" aria-label="Tabuleiro na posição inicial"></div>
-        <p class="caption">A posição inicial. As brancas sempre começam. A casa do canto inferior direito é sempre clara.</p>
+        <div class="board" id="hero-board" aria-label="Tabuleiro mostrando a Abertura Italiana"></div>
+        <p class="caption"><span class="live-dot" aria-hidden="true"></span> Assistindo: Abertura Italiana · <strong id="hero-move">posição inicial</strong></p>
+      </div>
+    </section>
+
+    <section id="basico" class="section alt">
+      <div class="section-head">
+        <p class="eyebrow">Lição 1</p>
+        <h2>Antes de começar</h2>
+        <p>O tabuleiro, as peças no lugar certo e as regras que valem para a partida toda.</p>
+      </div>
+
+      <div class="rules cols-4">
+        <div class="rule">
+          <span class="rule-icon" aria-hidden="true">▦</span>
+          <h3>O tabuleiro</h3>
+          <p>São 64 casas: 8 colunas (a até h) e 8 fileiras (1 até 8). Ele fica com a <strong>casa clara no canto inferior direito</strong>.</p>
+        </div>
+        <div class="rule">
+          <span class="rule-icon" aria-hidden="true">♛&#xFE0E;</span>
+          <h3>Peças no lugar</h3>
+          <p>Torres nos cantos, depois cavalos e bispos. A <strong>dama fica na casa da sua cor</strong> (a branca na casa clara) e o rei ao lado dela. Os peões vão na frente.</p>
+        </div>
+        <div class="rule">
+          <span class="rule-icon" aria-hidden="true">⇄</span>
+          <h3>Quem joga</h3>
+          <p>As <strong>brancas sempre começam</strong>. Cada jogador faz um lance por vez e ninguém pode passar a vez. Só se capturam peças do adversário.</p>
+        </div>
+        <div class="rule">
+          <span class="rule-icon" aria-hidden="true">☝</span>
+          <h3>Peça tocada, peça jogada</h3>
+          <p>Em torneios, se você tocar de propósito numa peça sua, tem que mexê-la. Para só arrumar a peça na casa, diga <em>"ajusto"</em> antes.</p>
+        </div>
+      </div>
+
+      <div class="lesson trainer">
+        <div class="board-wrap">
+          <div class="board" id="coord-board" aria-label="Tabuleiro do treino de coordenadas"></div>
+        </div>
+        <article class="panel">
+          <h3>Treino de coordenadas</h3>
+          <p>Toda casa tem um nome: a letra da coluna + o número da fileira. Saber isso ajuda a ler os lances das próximas lições. <strong>Clique na casa pedida:</strong></p>
+          <div class="coord-target" id="coord-target" aria-live="polite">e4</div>
+          <p class="coord-feedback" id="coord-feedback" aria-live="polite"></p>
+          <div class="coord-stats">
+            <span>Acertos <strong id="coord-hits">0</strong></span>
+            <span>Sequência <strong id="coord-streak">0</strong></span>
+            <span>Recorde <strong id="coord-best">0</strong></span>
+          </div>
+          <label class="check-row"><input type="checkbox" id="coord-labels" checked> Mostrar letras e números nas bordas</label>
+        </article>
       </div>
     </section>
 
     <section id="pecas" class="section">
       <div class="section-head">
-        <p class="eyebrow">Lição 1</p>
+        <p class="eyebrow">Lição 2</p>
         <h2>Como cada peça se move</h2>
         <p>Escolha uma peça. Clique em uma casa marcada para mover a peça até lá. Você também pode clicar em outra peça branca para ver os lances dela.</p>
       </div>
@@ -78,7 +139,7 @@
 
     <section id="especiais" class="section alt">
       <div class="section-head">
-        <p class="eyebrow">Lição 2</p>
+        <p class="eyebrow">Lição 3</p>
         <h2>Jogadas especiais</h2>
         <p>Três regras que pegam muita gente de surpresa. Conhecer cada uma pode salvar (ou ganhar) uma partida.</p>
       </div>
@@ -116,7 +177,7 @@
 
     <section id="valores" class="section">
       <div class="section-head">
-        <p class="eyebrow">Lição 3</p>
+        <p class="eyebrow">Lição 4</p>
         <h2>Quanto vale cada peça</h2>
         <p>Os pontos ajudam a decidir se uma troca é boa. Dar um cavalo (3) para ganhar uma torre (5) é bom negócio. Dar a dama (9) por um bispo (3), não.</p>
       </div>
@@ -126,7 +187,7 @@
 
     <section id="xeque" class="section alt">
       <div class="section-head">
-        <p class="eyebrow">Lição 4</p>
+        <p class="eyebrow">Lição 5</p>
         <h2>Xeque, xeque-mate e afogamento</h2>
         <p>O objetivo do xadrez não é capturar todas as peças: é dar <strong>xeque-mate</strong> no rei adversário.</p>
       </div>
@@ -159,9 +220,64 @@
       <div class="player" id="mate-player"></div>
     </section>
 
+    <section id="fim" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Lição 6</p>
+        <h2>Como a partida termina</h2>
+        <p>Uma partida de xadrez acaba de um destes jeitos. Vale a pena conhecer todos, principalmente os empates!</p>
+      </div>
+
+      <div class="end-grid">
+        <div class="end-col win">
+          <h3><span aria-hidden="true">🏆</span> Alguém vence</h3>
+          <dl>
+            <dt>Xeque-mate</dt>
+            <dd>O rei está em xeque e não tem como escapar.</dd>
+            <dt>Desistência</dt>
+            <dd>Um jogador desiste (abandona) porque sabe que vai perder.</dd>
+            <dt>Tempo</dt>
+            <dd>Em partidas com relógio, quem deixa o próprio tempo acabar perde (a não ser que o adversário não tenha peças para dar mate: aí é empate).</dd>
+          </dl>
+        </div>
+        <div class="end-col draw">
+          <h3><span aria-hidden="true">🤝</span> Empate</h3>
+          <dl>
+            <dt>Afogamento</dt>
+            <dd>Quem tem a vez não está em xeque, mas não tem nenhum lance permitido.</dd>
+            <dt>Acordo</dt>
+            <dd>Os dois jogadores combinam o empate.</dd>
+            <dt>Repetição tripla</dt>
+            <dd>A mesma posição aparece 3 vezes, com o mesmo jogador na vez.</dd>
+            <dt>Regra dos 50 lances</dt>
+            <dd>50 lances de cada lado sem nenhuma captura e sem mexer peão.</dd>
+            <dt>Material insuficiente</dt>
+            <dd>Ninguém consegue dar mate. Por exemplo: rei contra rei, ou rei e bispo contra rei.</dd>
+          </dl>
+        </div>
+      </div>
+      <p class="note-box">Na página <a href="jogar.html">Jogar</a>, todas essas regras de empate são detectadas automaticamente.</p>
+    </section>
+
+    <section id="taticas" class="section alt">
+      <div class="section-head">
+        <p class="eyebrow">Lição 7</p>
+        <h2>Táticas básicas</h2>
+        <p>Táticas são golpes curtos que ganham material ou dão mate. Estas quatro aparecem em quase toda partida, em qualquer nível.</p>
+      </div>
+
+      <div class="rules cols-4 tactic-cards">
+        <div class="rule"><span class="rule-icon" aria-hidden="true">⑂</span><h3>Garfo</h3><p>Uma peça ataca duas ao mesmo tempo. O cavalo é o rei dos garfos.</p></div>
+        <div class="rule"><span class="rule-icon" aria-hidden="true">📌</span><h3>Cravada</h3><p>Uma peça não pode sair do lugar porque deixaria uma peça mais valiosa atrás dela exposta.</p></div>
+        <div class="rule"><span class="rule-icon" aria-hidden="true">➶</span><h3>Espeto</h3><p>Ataca uma peça valiosa que, ao sair, deixa outra atrás dela para ser capturada.</p></div>
+        <div class="rule"><span class="rule-icon" aria-hidden="true">✦</span><h3>Ataque descoberto</h3><p>Uma peça sai da frente e "descobre" o ataque de outra peça que estava atrás.</p></div>
+      </div>
+
+      <div class="player" id="tactic-player"></div>
+    </section>
+
     <section id="aberturas" class="section">
       <div class="section-head">
-        <p class="eyebrow">Lição 5</p>
+        <p class="eyebrow">Lição 8</p>
         <h2>Aberturas para começar bem</h2>
         <p>A abertura são os primeiros lances do jogo. Três ideias valem para quase todas: <strong>ocupar o centro</strong>, <strong>tirar os cavalos e bispos</strong> de casa e <strong>proteger o rei</strong>.</p>
       </div>
@@ -173,12 +289,56 @@
           <li><strong>R</strong> = Rei, <strong>D</strong> = Dama, <strong>T</strong> = Torre, <strong>B</strong> = Bispo, <strong>C</strong> = Cavalo. O peão não tem letra.</li>
           <li><strong>x</strong> = captura (ex.: <code>Cxd4</code>, o cavalo captura em d4).</li>
           <li><strong>+</strong> = xeque, <strong>#</strong> = xeque-mate.</li>
-          <li><strong>O-O</strong> = roque pequeno, <strong>O-O-O</strong> = roque grande (veja a Lição 2).</li>
+          <li><strong>O-O</strong> = roque pequeno, <strong>O-O-O</strong> = roque grande (veja a Lição 3).</li>
           <li><strong>e.p.</strong> = en passant, <strong>=D</strong> = promoção a dama.</li>
+          <li><strong>?</strong> = lance ruim, <strong>??</strong> = erro grave.</li>
         </ul>
       </details>
 
       <div class="player" id="opening-player"></div>
+    </section>
+
+    <section id="dicas" class="section alt">
+      <div class="section-head">
+        <p class="eyebrow">Para levar para o jogo</p>
+        <h2>Dicas de ouro</h2>
+        <p>Oito hábitos que fazem qualquer iniciante jogar muito melhor.</p>
+      </div>
+      <ol class="tips">
+        <li><strong>Controle o centro.</strong> As casas e4, d4, e5 e d5 são as mais importantes do tabuleiro.</li>
+        <li><strong>Desenvolva as peças.</strong> Tire cavalos e bispos de casa antes de mexer a mesma peça duas vezes.</li>
+        <li><strong>Faça o roque cedo.</strong> Rei no meio do tabuleiro é alvo fácil.</li>
+        <li><strong>Não saia com a dama cedo demais.</strong> Ela vira alvo e você perde tempo fugindo.</li>
+        <li><strong>Pergunte sempre: "o que ele quer?"</strong> Antes de jogar, veja o que o último lance do adversário ameaça.</li>
+        <li><strong>Não entregue peças.</strong> Antes de soltar a peça, confira se a casa está atacada.</li>
+        <li><strong>Procure xeques, capturas e ameaças.</strong> Nessa ordem, para você e para o adversário.</li>
+        <li><strong>No final, use o rei.</strong> Com poucas peças no tabuleiro, o rei vira uma peça forte de ataque.</li>
+      </ol>
+
+      <h3 class="facts-title">Você sabia?</h3>
+      <div class="facts">
+        <div class="fact"><span class="fact-big">10<sup>120</sup></span><p>É a estimativa de partidas diferentes possíveis no xadrez (número de Shannon). Bem mais que os átomos do universo observável, cerca de 10<sup>80</sup>.</p></div>
+        <div class="fact"><span class="fact-big">2</span><p>lances: a partida mais curta possível termina em xeque-mate no 2º lance. É o Mate do Louco, que está na Lição 5.</p></div>
+        <div class="fact"><span class="fact-big">♛&#xFE0E;</span><p>A dama já foi uma peça fraca, que andava só uma casa na diagonal. Ela virou a peça mais forte no fim do século XV.</p></div>
+        <div class="fact"><span class="fact-big">شاه</span><p>"Xeque-mate" vem do persa <em>shāh māt</em>, algo como "o rei está indefeso". <em>Shāh</em> quer dizer rei.</p></div>
+      </div>
+    </section>
+
+    <section id="jogar" class="cta">
+      <div class="cta-inner">
+        <span class="cta-deco" aria-hidden="true">♚&#xFE0E;♛&#xFE0E;</span>
+        <p class="eyebrow">Hora da prática</p>
+        <h2>Pronto para jogar?</h2>
+        <p>Coloque tudo em prática numa partida de verdade, contra o computador ou com um amigo no mesmo aparelho.</p>
+        <ul class="cta-features">
+          <li>♟&#xFE0E; Todas as regras</li>
+          <li>🤖 3 níveis de computador</li>
+          <li>👥 2 jogadores</li>
+          <li>💡 Dicas de lance</li>
+          <li>↶ Desfazer lance</li>
+        </ul>
+        <a class="btn btn-light" href="jogar.html">Jogar agora →</a>
+      </div>
     </section>
   </main>
 
@@ -186,6 +346,9 @@
     <p>Feito com HTML, CSS e JavaScript puro · Projeto diário #1</p>
   </footer>
 
+  <button class="to-top" id="to-top" type="button" aria-label="Voltar ao topo" hidden>↑</button>
+
+  <script src="board.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

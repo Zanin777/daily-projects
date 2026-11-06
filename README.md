@@ -4,7 +4,7 @@ Um projetinho novo por dia — linguagens variadas, ideias pequenas, código lim
 
 | Dia | Projeto | Linguagem | Descrição |
 |-----|---------|-----------|-----------|
-| 2026-11-06 | [xadrez](2026-11-06-xadrez/) | HTML / CSS / JavaScript | Site interativo que ensina a jogar xadrez |
+| 2026-11-06 | [xadrez](2026-11-06-xadrez/) | HTML / CSS / JavaScript | Site que ensina xadrez + partida contra o computador |
 
 ## Como rodar
 

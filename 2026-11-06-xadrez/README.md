@@ -1,21 +1,31 @@
 # ♞ Aprenda Xadrez
 
-Site interativo para quem nunca jogou xadrez. Tudo é ensinado num tabuleiro de verdade, com cliques.
+Site interativo para quem nunca jogou xadrez. Tudo é ensinado num tabuleiro de verdade, e no final dá para jogar uma partida completa.
 
-## O que tem
+## Lições (`index.html`)
 
-1. **Como cada peça se move**: escolha uma peça e clique nas casas marcadas para movê-la. O site mostra onde ela pode ir, onde pode capturar e, no caso do rei, as casas proibidas por estarem atacadas.
-2. **Jogadas especiais**: roque (pequeno e grande), en passant e promoção do peão, com as regras e exemplos animados.
-3. **Valor das peças**: peão 1, cavalo 3, bispo 3, torre 5, dama 9.
-4. **Xeque, xeque-mate e afogamento**: as regras, os 3 jeitos de sair do xeque e exemplos animados (Mate do Pastor, Mate do corredor e afogamento).
-5. **Aberturas**, lance a lance e com explicação:
-   - Brancas: Abertura Italiana e Gambito da Dama
-   - Pretas: Defesa Siciliana (Najdorf) e Defesa Caro-Kann
+1. **Antes de começar**: o tabuleiro, as peças no lugar e as regras gerais, com um treino de coordenadas.
+2. **Como cada peça se move**: clique e mova as peças. O site mostra onde cada uma pode ir e capturar, e a promoção abre um menu de escolha.
+3. **Jogadas especiais**: roque, en passant e promoção.
+4. **Valor das peças**.
+5. **Xeque, xeque-mate e afogamento**: Mate do Louco, Mate do Pastor e Mate do corredor.
+6. **Como a partida termina**: vitória e todos os tipos de empate.
+7. **Táticas básicas**: garfo, cravada, espeto e ataque descoberto.
+8. **Aberturas**: Italiana, Gambito da Dama, Siciliana e Caro-Kann.
+9. **Dicas de ouro** e **Você sabia?**
 
-As peças deslizam de uma casa para outra, e cada lance tem som (lance, captura e xeque). Os sons são gerados na hora com a Web Audio API, sem arquivos de áudio. Um botão no topo liga e desliga o som.
+## Jogar (`jogar.html`)
+
+- Contra o computador (fácil, médio e difícil) ou 2 jogadores no mesmo aparelho.
+- Todas as regras: xeque, mate, roque, en passant, promoção, afogamento, repetição tripla, regra dos 50 lances e material insuficiente.
+- Arrastar ou clicar, desfazer, virar o tabuleiro, dica, desistir e 3 temas de tabuleiro.
+
+O motor de xadrez (`engine.js`) foi validado com testes perft oficiais.
 
 ## Como abrir
 
 Abra o `index.html` no navegador. Não precisa instalar nada.
+
+As peças deslizam e cada lance tem som. Os sons são gerados com a Web Audio API, sem arquivos de áudio (veja `sons/LEIA-ME.md` para usar os seus).
 
 Feito com HTML, CSS e JavaScript puro, sem bibliotecas.
