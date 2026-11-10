@@ -6,6 +6,7 @@ Um projetinho novo por dia — linguagens variadas, ideias pequenas, código lim
 |-----|---------|-----------|-----------|
 | 2026-11-06 | [xadrez](2026-11-06-xadrez/) | HTML / CSS / JavaScript | Site que ensina xadrez + partida contra o computador |
 | 2026-11-07 | [jogo-da-vida](2026-11-07-jogo-da-vida/) | Python | Jogo da Vida de Conway animado no terminal, com padrões clássicos |
+| 2026-11-10 | [sistema-solar](2026-11-10-sistema-solar/) | HTML / CSS / JavaScript (canvas) | Simulador do Sistema Solar com as posições de hoje |
 
 ## Como rodar
 

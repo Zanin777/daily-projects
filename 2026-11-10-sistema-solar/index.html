@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sistema Solar</title>
+  <meta name="description" content="Simulador interativo do Sistema Solar: planetas girando nas posições aproximadas de hoje, com dados e curiosidades.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="sky" aria-label="Simulação do Sistema Solar. Use a lista de planetas abaixo para ver cada um."></canvas>
+
+  <header class="hud hud-top">
+    <div class="title">
+      <h1>Sistema Solar</h1>
+      <p class="date" id="date" aria-live="off"></p>
+    </div>
+
+    <div class="controls">
+      <button class="btn icon" id="btn-play" type="button" aria-label="Pausar">❚❚</button>
+      <label class="speed">
+        <span>Velocidade</span>
+        <input type="range" id="speed" min="0" max="100" value="38" aria-describedby="speed-label">
+        <output id="speed-label"></output>
+      </label>
+      <button class="btn" id="btn-today" type="button" title="Voltar para a data de hoje">Hoje</button>
+    </div>
+
+    <div class="toggles">
+      <label><input type="checkbox" id="opt-orbits" checked> Órbitas</label>
+      <label><input type="checkbox" id="opt-labels" checked> Nomes</label>
+      <label><input type="checkbox" id="opt-real"> Distâncias reais</label>
+    </div>
+  </header>
+
+  <aside class="info" id="info" hidden aria-live="polite">
+    <button class="close" id="info-close" type="button" aria-label="Fechar e voltar à visão geral">✕</button>
+    <div class="info-head">
+      <span class="swatch" id="info-swatch" aria-hidden="true"></span>
+      <div>
+        <p class="kind" id="info-kind"></p>
+        <h2 id="info-name"></h2>
+      </div>
+    </div>
+    <p class="summary" id="info-summary"></p>
+    <dl class="facts" id="info-facts"></dl>
+    <div class="weight">
+      <label for="weight">Se você pesa <input type="number" id="weight" value="60" min="1" max="500" inputmode="numeric"> kg na Terra,</label>
+      <p>aqui a balança marcaria <strong id="weight-out"></strong><small id="weight-note"></small></p>
+    </div>
+    <h3>Curiosidades</h3>
+    <ul class="curios" id="info-curios"></ul>
+  </aside>
+
+  <nav class="hud hud-bottom" aria-label="Planetas">
+    <button class="btn" id="btn-overview" type="button" aria-label="Visão geral">⤢ <span>Visão geral</span></button>
+    <div class="planet-list" id="planet-list"></div>
+  </nav>
+
+  <p class="hint" id="hint">Clique num planeta · arraste para mover · role para dar zoom</p>
+
+  <script src="app.js"></script>
+</body>
+</html>
