@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Escola de Poker</title>
+  <meta name="description" content="Aprenda Texas Hold'em do zero: ranking das mãos, uma rodada passo a passo, ações, posições, treinos e matemática básica. Só com fichas de mentira.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#inicio"><span aria-hidden="true">♠&#xFE0E;</span> Escola de Poker</a>
+    <nav aria-label="Seções">
+      <a href="#basico">Básico</a>
+      <a href="#maos">Mãos</a>
+      <a href="#rodada">Rodada</a>
+      <a href="#acoes">Ações</a>
+      <a href="#posicoes">Posições</a>
+      <a href="#treino">Treino</a>
+      <a href="#matematica">Matemática</a>
+      <a href="#glossario">Glossário</a>
+      <button class="sound" id="sound" type="button" aria-pressed="true"><span aria-hidden="true">🔊</span> Som</button>
+    </nav>
+    <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  </header>
+
+  <main>
+    <!-- ================= Topo ================= -->
+    <section id="inicio" class="hero">
+      <div class="hero-text">
+        <p class="eyebrow">Texas Hold'em do zero</p>
+        <h1>Aprenda poker <em>sem apostar nada</em>.</h1>
+        <p class="lead">Do ranking das mãos até ler a mesa como um jogador de verdade. Cartas que se mexem, uma mão completa passo a passo e treinos com placar.</p>
+        <div class="hero-actions">
+          <a class="btn btn-gold" href="#basico">Começar a aula →</a>
+          <a class="btn btn-ghost" href="#treino">Ir para o treino</a>
+        </div>
+        <ul class="hero-stats">
+          <li><strong>10</strong> mãos explicadas</li>
+          <li><strong>7</strong> lições</li>
+          <li><strong>2</strong> treinos com placar</li>
+        </ul>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="fan" id="hero-fan"></div>
+        <div class="chips">
+          <span class="chip c-red"></span><span class="chip c-blue"></span><span class="chip c-black"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Lição 1 ================= -->
+    <section id="basico" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Lição 1</p>
+        <h2>O baralho e o objetivo</h2>
+        <p>O poker usa um baralho comum de 52 cartas, sem coringas. A variante mais jogada no mundo é o <strong>Texas Hold'em</strong>, e é ela que você vai aprender aqui.</p>
+      </div>
+
+      <div class="suits" id="suits"></div>
+
+      <div class="ranks-strip">
+        <p class="strip-title">Os 13 valores, do menor para o maior</p>
+        <div class="ranks" id="ranks"></div>
+        <p class="strip-note"><strong>J</strong> = Valete · <strong>Q</strong> = Dama · <strong>K</strong> = Rei · <strong>A</strong> = Ás. Os naipes não têm ordem: nenhum vale mais que o outro.</p>
+      </div>
+
+      <div class="rules">
+        <div class="rule">
+          <span class="rule-icon" aria-hidden="true">🏆</span>
+          <h3>O objetivo</h3>
+          <p>Ganhar as fichas do <strong>pote</strong>. Dá para ganhar de dois jeitos: tendo a <strong>melhor mão</strong> no final, ou fazendo todos os outros <strong>desistirem</strong> antes.</p>
+        </div>
+        <div class="rule">
+          <span class="rule-icon" aria-hidden="true">🃏</span>
+          <h3>2 suas + 5 da mesa</h3>
+          <p>Cada jogador recebe <strong>2 cartas fechadas</strong>. Depois saem <strong>5 cartas comunitárias</strong> na mesa, que valem para todos. Sua mão é a <strong>melhor combinação de 5</strong> entre essas 7.</p>
+        </div>
+        <div class="rule">
+          <span class="rule-icon" aria-hidden="true">A</span>
+          <h3>O Ás é especial</h3>
+          <p>É a carta mais alta, mas numa sequência também pode valer 1: <strong>A-2-3-4-5</strong> é a menor sequência. Só não dá para "dar a volta": Q-K-A-2-3 não vale.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Lição 2 ================= -->
+    <section id="maos" class="section alt">
+      <div class="section-head">
+        <p class="eyebrow">Lição 2</p>
+        <h2>O ranking das mãos</h2>
+        <p>Da melhor para a pior. Decore esta lista e você já entende 80% do jogo. A porcentagem é a chance de terminar com essa mão usando as 7 cartas do Texas Hold'em.</p>
+      </div>
+      <ol class="hand-list" id="hand-list"></ol>
+
+      <div class="kicker-box">
+        <div>
+          <h3>E se as duas mãos forem do mesmo tipo?</h3>
+          <p>Ganha a combinação mais alta: par de Reis vence par de Damas. Se a combinação for igual, quem decide é o <strong>kicker</strong>, a carta mais alta que sobra entre as 5. Se tudo for igual, é empate e o pote é dividido.</p>
+        </div>
+        <div class="kicker-demo">
+          <div class="kd-row"><span class="kd-label">Você</span><div class="kd-cards" id="kd-a"></div><span class="kd-tag win">vence</span></div>
+          <div class="kd-row"><span class="kd-label">Rival</span><div class="kd-cards" id="kd-b"></div><span class="kd-tag">perde</span></div>
+          <p class="kd-note">Os dois têm par de Reis. O kicker Ás vence o kicker Dama.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Lição 3 ================= -->
+    <section id="rodada" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Lição 3</p>
+        <h2>Uma mão do começo ao fim</h2>
+        <p>Acompanhe uma mão inteira de Texas Hold'em com quatro jogadores. Avance passo a passo com ▶ ou deixe rodar sozinho.</p>
+      </div>
+
+      <ol class="stages" id="stages">
+        <li data-stage="blinds"><b>1</b> Blinds</li>
+        <li data-stage="preflop"><b>2</b> Pré-flop</li>
+        <li data-stage="flop"><b>3</b> Flop</li>
+        <li data-stage="turn"><b>4</b> Turn</li>
+        <li data-stage="river"><b>5</b> River</li>
+        <li data-stage="showdown"><b>6</b> Showdown</li>
+      </ol>
+
+      <div class="hand-lesson">
+        <div class="felt" id="table">
+          <div class="felt-center">
+            <div class="pot" id="pot"></div>
+            <div class="board" id="board"></div>
+          </div>
+        </div>
+        <article class="panel hand-panel">
+          <p class="step-count" id="step-count"></p>
+          <h3 id="step-title"></h3>
+          <p class="step-note" id="step-note" aria-live="polite"></p>
+          <div class="controls">
+            <button class="ctrl" type="button" data-act="first" aria-label="Início">⏮</button>
+            <button class="ctrl" type="button" data-act="prev" aria-label="Passo anterior">◀</button>
+            <button class="ctrl play" type="button" data-act="play">▶ Assistir</button>
+            <button class="ctrl" type="button" data-act="next" aria-label="Próximo passo">▶</button>
+          </div>
+          <div class="mode-switch">
+            <button class="btn btn-ghost small" id="btn-guided" type="button" aria-pressed="true">📖 Mão explicada</button>
+            <button class="btn btn-ghost small" id="btn-random" type="button" aria-pressed="false">🎲 Mão aleatória</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ================= Lição 4 ================= -->
+    <section id="acoes" class="section alt">
+      <div class="section-head">
+        <p class="eyebrow">Lição 4</p>
+        <h2>O que você pode fazer na sua vez</h2>
+        <p>Em cada rodada de apostas, os jogadores falam um de cada vez, no sentido horário. Na sua vez, você escolhe uma destas ações:</p>
+      </div>
+      <div class="actions-grid">
+        <div class="action"><span class="a-icon check" aria-hidden="true">✓</span><h3>Passar <small>check</small></h3><p>Não aposta nada e passa a vez. Só é possível se ninguém apostou ainda nessa rodada.</p></div>
+        <div class="action"><span class="a-icon bet" aria-hidden="true">●</span><h3>Apostar <small>bet</small></h3><p>Coloca fichas no pote quando ninguém apostou antes. Os outros terão que pagar para continuar.</p></div>
+        <div class="action"><span class="a-icon call" aria-hidden="true">=</span><h3>Pagar <small>call</small></h3><p>Coloca a mesma quantidade que a maior aposta da rodada, para continuar na mão.</p></div>
+        <div class="action"><span class="a-icon raise" aria-hidden="true">↑</span><h3>Aumentar <small>raise</small></h3><p>Paga a aposta e coloca mais. No No-Limit, o aumento precisa ser pelo menos do tamanho da aposta ou aumento anterior.</p></div>
+        <div class="action"><span class="a-icon fold" aria-hidden="true">✕</span><h3>Desistir <small>fold</small></h3><p>Larga as cartas e sai da mão. Perde o que já colocou no pote, mas não arrisca mais nada.</p></div>
+        <div class="action"><span class="a-icon allin" aria-hidden="true">★</span><h3>All-in</h3><p>Aposta todas as fichas que tem. Se outros continuarem apostando além disso, forma-se um pote paralelo (side pot).</p></div>
+      </div>
+      <p class="note-box">A rodada de apostas termina quando todos os que continuam na mão colocaram a mesma quantidade de fichas, ou quando só sobra um jogador. Nesse caso, ele ganha o pote sem precisar mostrar as cartas.</p>
+    </section>
+
+    <!-- ================= Lição 5 ================= -->
+    <section id="posicoes" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Lição 5</p>
+        <h2>As posições na mesa</h2>
+        <p>Onde você senta em relação ao botão do dealer muda tudo: quem fala por último tem mais informação. A cada mão, o botão anda uma cadeira no sentido horário. Clique em uma cadeira para saber mais.</p>
+      </div>
+
+      <div class="positions">
+        <div class="pos-table-wrap">
+          <div class="pos-table" id="pos-table">
+            <span class="dealer-chip" id="dealer-chip" aria-hidden="true">D</span>
+          </div>
+        </div>
+        <article class="panel pos-panel">
+          <div class="seg" role="radiogroup" aria-label="Mostrar ordem de ação">
+            <button type="button" role="radio" aria-checked="true" data-order="pre">Ordem no pré-flop</button>
+            <button type="button" role="radio" aria-checked="false" data-order="post">Ordem depois do flop</button>
+          </div>
+          <p class="order-note" id="order-note"></p>
+          <div class="pos-info" id="pos-info" aria-live="polite"></div>
+          <button class="btn btn-gold" id="btn-move" type="button">↻ Próxima mão (mover o botão)</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- ================= Lição 6 ================= -->
+    <section id="treino" class="section alt">
+      <div class="section-head">
+        <p class="eyebrow">Lição 6</p>
+        <h2>Hora de treinar</h2>
+        <p>Cada rodada é sorteada na hora, com cartas de verdade. Veja quanto tempo você mantém a sequência de acertos.</p>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Tipo de treino">
+        <button type="button" role="tab" aria-selected="true" data-quiz="winner">🏆 Quem ganha?</button>
+        <button type="button" role="tab" aria-selected="false" data-quiz="name">🃏 Qual é essa mão?</button>
+      </div>
+
+      <div class="quiz panel">
+        <div class="score">
+          <span>Acertos <strong id="q-hits">0</strong> de <strong id="q-total">0</strong></span>
+          <span>Sequência <strong id="q-streak">0</strong></span>
+          <span>Recorde <strong id="q-best">0</strong></span>
+        </div>
+        <div id="quiz-body"></div>
+        <div class="feedback" id="q-feedback" aria-live="polite" hidden></div>
+        <button class="btn btn-gold" id="q-next" type="button" hidden>Próxima →</button>
+      </div>
+    </section>
+
+    <!-- ================= Lição 7 ================= -->
+    <section id="matematica" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Lição 7</p>
+        <h2>Matemática básica: outs</h2>
+        <p><strong>Outs</strong> são as cartas que ainda estão no baralho e que transformam a sua mão na provável vencedora. Contar outs diz se vale a pena pagar para ver a próxima carta.</p>
+      </div>
+
+      <div class="outs">
+        <article class="panel outs-panel">
+          <label class="outs-label" for="outs">Quantos outs você tem? <strong id="outs-value">9</strong></label>
+          <input type="range" id="outs" min="1" max="20" value="9">
+          <div class="seg" role="radiogroup" aria-label="Em que momento da mão">
+            <button type="button" role="radio" aria-checked="true" data-street="flop">Estou no flop</button>
+            <button type="button" role="radio" aria-checked="false" data-street="turn">Estou no turn</button>
+          </div>
+          <div class="examples">
+            <span>Exemplos:</span>
+            <button type="button" data-outs="9">Projeto de flush (9)</button>
+            <button type="button" data-outs="8">Sequência aberta (8)</button>
+            <button type="button" data-outs="4">Sequência por dentro (4)</button>
+            <button type="button" data-outs="2">Par virar trinca (2)</button>
+          </div>
+        </article>
+        <article class="panel outs-result" aria-live="polite">
+          <div class="big-pct"><span id="pct-exact">35%</span><small id="pct-label">chance de acertar até o river</small></div>
+          <div class="bar"><span id="pct-bar"></span></div>
+          <dl class="outs-facts">
+            <div><dt id="rule-label">Regra do 4</dt><dd id="pct-rule">36%</dd></div>
+            <div><dt>Só na próxima carta</dt><dd id="pct-next">19%</dd></div>
+          </dl>
+          <p class="outs-explain" id="outs-explain"></p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ================= Glossário ================= -->
+    <section id="glossario" class="section alt">
+      <div class="section-head">
+        <p class="eyebrow">Para consultar</p>
+        <h2>Glossário</h2>
+        <p>As palavras que você vai ouvir em qualquer mesa de poker.</p>
+      </div>
+      <label class="search">
+        <span aria-hidden="true">🔎</span>
+        <input type="search" id="gloss-search" placeholder="Buscar termo (ex.: kicker, river...)" aria-label="Buscar no glossário">
+      </label>
+      <dl class="glossary" id="glossary"></dl>
+      <p class="gloss-empty" id="gloss-empty" hidden>Nenhum termo encontrado.</p>
+    </section>
+
+    <!-- ================= Dicas ================= -->
+    <section id="dicas" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Para levar para a mesa</p>
+        <h2>Dicas para iniciantes</h2>
+      </div>
+      <ol class="tips">
+        <li><strong>Jogue poucas mãos, mas boas.</strong> Pares altos, A-K e A-Q. Desistir no pré-flop é normal: os bons jogadores desistem da maioria das mãos.</li>
+        <li><strong>Posição é poder.</strong> Jogue mais mãos perto do botão e menos quando for o primeiro a falar.</li>
+        <li><strong>Prefira apostar a só pagar.</strong> Quem aposta pode ganhar de dois jeitos: com a melhor mão ou fazendo o outro desistir.</li>
+        <li><strong>Leia a mesa.</strong> Antes de se empolgar, pergunte: qual é a melhor mão possível com essas cartas comunitárias?</li>
+        <li><strong>Blefe com moderação.</strong> Contra iniciantes, que pagam demais, o blefe funciona menos do que parece.</li>
+        <li><strong>Saiba largar a mão.</strong> Um par de Ases bonito pode estar perdendo. Desistir na hora certa economiza fichas.</li>
+        <li><strong>Conte seus outs.</strong> Antes de pagar uma aposta, veja quanto você precisa acertar e qual é a chance.</li>
+        <li><strong>Cuidado com o tilt.</strong> Perdeu uma mão difícil? Respire. Jogar irritado é o jeito mais rápido de perder mais.</li>
+      </ol>
+
+      <aside class="responsible">
+        <h3><span aria-hidden="true">🛡️</span> Jogue com responsabilidade</h3>
+        <p>Este site é só para aprender, com fichas de mentira. Se um dia jogar valendo dinheiro, use apenas o que você pode perder, defina limites antes de começar e pare quando o jogo deixar de ser diversão. Se sentir que está perdendo o controle, procure ajuda.</p>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Feito com HTML, CSS e JavaScript puro · Projeto diário #4</p>
+  </footer>
+
+  <button class="to-top" id="to-top" type="button" aria-label="Voltar ao topo" hidden>↑</button>
+
+  <script src="cards.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
