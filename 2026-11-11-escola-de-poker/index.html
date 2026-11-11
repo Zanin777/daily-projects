@@ -22,6 +22,7 @@
       <a href="#treino">Treino</a>
       <a href="#matematica">Matemática</a>
       <a href="#glossario">Glossário</a>
+      <a class="nav-play" href="#jogar">♠&#xFE0E; Jogar</a>
       <button class="sound" id="sound" type="button" aria-pressed="true"><span aria-hidden="true">🔊</span> Som</button>
     </nav>
     <div class="progress" aria-hidden="true"><span id="progress"></span></div>
@@ -36,12 +37,12 @@
         <p class="lead">Do ranking das mãos até ler a mesa como um jogador de verdade. Cartas que se mexem, uma mão completa passo a passo e treinos com placar.</p>
         <div class="hero-actions">
           <a class="btn btn-gold" href="#basico">Começar a aula →</a>
-          <a class="btn btn-ghost" href="#treino">Ir para o treino</a>
+          <a class="btn btn-ghost" href="#jogar">♠&#xFE0E; Jogar contra o computador</a>
         </div>
         <ul class="hero-stats">
           <li><strong>10</strong> mãos explicadas</li>
           <li><strong>7</strong> lições</li>
-          <li><strong>2</strong> treinos com placar</li>
+          <li><strong>3</strong> níveis de computador</li>
         </ul>
       </div>
       <div class="hero-art" aria-hidden="true">
@@ -293,6 +294,73 @@
         <p>Este site é só para aprender, com fichas de mentira. Se um dia jogar valendo dinheiro, use apenas o que você pode perder, defina limites antes de começar e pare quando o jogo deixar de ser diversão. Se sentir que está perdendo o controle, procure ajuda.</p>
       </aside>
     </section>
+
+    <!-- ================= Jogo contra o computador ================= -->
+    <section id="jogar" class="section play-section">
+      <div class="section-head">
+        <p class="eyebrow">Hora do jogo</p>
+        <h2>Jogue contra o computador</h2>
+        <p>Você e 3 adversários controlados pelo computador, com <strong>1.000 fichas de mentira</strong> cada e blinds de 5/10. Vale tudo o que você aprendeu: quem ficar com todas as fichas vence.</p>
+      </div>
+
+      <div class="game-bar">
+        <div class="seg" id="g-level" role="radiogroup" aria-label="Nível do computador">
+          <button type="button" role="radio" aria-checked="false" data-level="1">🙂 Fácil</button>
+          <button type="button" role="radio" aria-checked="true" data-level="2">🤔 Médio</button>
+          <button type="button" role="radio" aria-checked="false" data-level="3">😈 Difícil</button>
+        </div>
+        <span class="g-handno" id="g-handno"></span>
+        <button class="btn btn-ghost small" id="g-new" type="button">↺ Nova partida</button>
+      </div>
+
+      <div class="game">
+        <div class="game-table-wrap">
+          <div class="felt game-felt" id="g-table">
+            <div class="felt-center">
+              <div class="pot" id="g-pot"></div>
+              <div class="board" id="g-board"></div>
+            </div>
+            <div class="game-over" id="g-over" hidden>
+              <div class="go-card" role="dialog" aria-labelledby="g-over-title">
+                <div class="go-icon" id="g-over-icon" aria-hidden="true"></div>
+                <h3 id="g-over-title"></h3>
+                <p id="g-over-text"></p>
+                <button class="btn btn-gold" id="g-again" type="button">Jogar de novo</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <article class="panel game-panel">
+          <p class="g-status" id="g-status" aria-live="polite"></p>
+          <p class="g-myhand" id="g-myhand"></p>
+
+          <div class="g-actions" id="g-actions">
+            <div class="g-buttons">
+              <button class="g-btn fold" id="g-fold" type="button">Desistir</button>
+              <button class="g-btn call" id="g-call" type="button">Passar</button>
+              <button class="g-btn raise" id="g-raise" type="button">Apostar</button>
+            </div>
+            <div class="g-raise-box" id="g-raise-box">
+              <input type="range" id="g-amount" min="10" max="1000" step="5" value="10" aria-label="Valor da aposta">
+              <div class="g-quick" id="g-quick">
+                <button type="button" data-frac="0.5">½ pote</button>
+                <button type="button" data-frac="0.75">¾ pote</button>
+                <button type="button" data-frac="1">Pote</button>
+                <button type="button" data-frac="all">All-in</button>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-gold g-next" id="g-next" type="button" hidden>Próxima mão ▶</button>
+
+          <label class="check-row"><input type="checkbox" id="g-hint-toggle"> 💡 Mostrar minha chance de ganhar</label>
+          <p class="g-hint" id="g-hint" hidden></p>
+
+          <h3 class="g-log-title">Histórico</h3>
+          <ol class="g-log" id="g-log" aria-label="Histórico de lances"></ol>
+        </article>
+      </div>
+    </section>
   </main>
 
   <footer class="footer">
@@ -303,5 +371,6 @@
 
   <script src="cards.js"></script>
   <script src="app.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>
