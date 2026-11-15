@@ -1,0 +1,179 @@
+:root {
+  --s: min(17vw, 74px); /* tamanho de cada pecinha */
+  --fundo: #0f1117;
+  --painel: #181b24;
+  --borda: #2a2f3d;
+  --texto: #e8eaf0;
+  --suave: #9aa1b2;
+  --destaque: #ffd500;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 35%, #1d2233, var(--fundo) 70%);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.app {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+}
+
+h1 { font-size: 1.8rem; letter-spacing: .02em; }
+header p { margin-top: 6px; color: var(--suave); font-size: .9rem; line-height: 1.6; }
+
+kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 .35em;
+  border: 1px solid var(--borda);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--painel);
+  font: 600 .8rem/1.5 ui-monospace, monospace;
+}
+
+.placar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.placar div {
+  padding: 8px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--painel);
+}
+.placar span { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--suave); }
+.placar strong { font: 700 1.4rem/1.3 ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+/* ---------- cubo 3D ---------- */
+
+.cena {
+  height: calc(var(--s) * 5.2);
+  display: grid;
+  place-items: center;
+  perspective: calc(var(--s) * 14);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.cena:active { cursor: grabbing; }
+
+.cubo {
+  position: relative;
+  width: calc(var(--s) * 3);
+  height: calc(var(--s) * 3);
+  transform-style: preserve-3d;
+  transform: rotateX(-28deg) rotateY(-38deg);
+}
+
+/* Cada peça fica com o centro no centro do cubo; a posição vem do translate3d feito no JS. */
+.peca {
+  position: absolute;
+  left: var(--s);
+  top: var(--s);
+  width: var(--s);
+  height: var(--s);
+  transform-style: preserve-3d;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  background: #0b0b0d; /* sem borda arredondada: senão as cores de trás vazam pelos cantos */
+}
+.face.F { transform: translateZ(calc(var(--s) / 2)); }
+.face.B { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+.face.R { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
+.face.L { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+.face.U { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
+.face.D { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
+
+/* adesivo colorido */
+.face[style]::after {
+  content: "";
+  position: absolute;
+  inset: 6%;
+  border-radius: 12%;
+  background: var(--cor);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .25), inset 0 -.35em .6em rgb(0 0 0 / .18);
+}
+
+/* ---------- controles ---------- */
+
+.status { min-height: 1.5em; color: var(--suave); }
+.status.sucesso { color: var(--destaque); font-weight: 700; }
+.status.erro { color: #ff7b7b; }
+
+button {
+  font: inherit;
+  color: var(--texto);
+  background: var(--painel);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .1s;
+}
+button:hover { border-color: #4a5168; background: #20242f; }
+button:active { transform: translateY(1px); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--destaque); outline-offset: 2px; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+
+/* 2 botões em cima (Embaralhar, Dica) e 3 embaixo */
+.acoes { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.acoes button { grid-column: span 2; padding: 10px 6px; }
+.acoes button:nth-child(-n + 2) { grid-column: span 3; }
+.acoes .principal { background: var(--destaque); color: #111; border-color: transparent; font-weight: 700; }
+.acoes .principal:hover { background: #ffe14d; }
+
+.teclas { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.teclas button { padding: 8px 0; font: 700 1rem ui-monospace, monospace; }
+.teclas button::before {
+  content: "";
+  display: inline-block;
+  width: .6em;
+  height: .6em;
+  margin-right: .35em;
+  border-radius: 2px;
+  background: var(--cor);
+}
+
+.sequencia { text-align: left; }
+.sequencia label { font-size: .85rem; color: var(--suave); }
+.sequencia div { display: flex; gap: 8px; margin-top: 6px; }
+.sequencia input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--painel);
+  color: var(--texto);
+  font: 1rem ui-monospace, monospace;
+}
+
+.historico {
+  min-height: 1.4em;
+  color: var(--suave);
+  font: .85rem/1.6 ui-monospace, monospace;
+  word-spacing: .2em;
+  overflow-wrap: anywhere;
+}
+
+/* botão do movimento sugerido pela dica */
+.teclas button.dica {
+  border-color: var(--destaque);
+  box-shadow: 0 0 0 2px var(--destaque), 0 0 14px rgb(255 213 0 / .5);
+  animation: piscar .8s ease-in-out infinite alternate;
+}
+@keyframes piscar { to { box-shadow: 0 0 0 2px var(--destaque), 0 0 2px rgb(255 213 0 / .2); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .teclas button.dica { animation: none; }
+}

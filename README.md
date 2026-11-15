@@ -9,6 +9,7 @@ Um projetinho novo por dia — linguagens variadas, ideias pequenas, código lim
 | 2026-11-10 | [sistema-solar](2026-11-10-sistema-solar/) | HTML / CSS / JavaScript (canvas) | Simulador do Sistema Solar com as posições de hoje |
 | 2026-11-11 | [escola-de-poker](2026-11-11-escola-de-poker/) | HTML / CSS / JavaScript | Escola de Texas Hold'em com mesa animada, treinos e calculadora de outs |
 | 2026-11-13 | [sudoku](2026-11-13-sudoku/) | Java | Resolvedor e gerador de Sudoku no terminal, com animação do backtracking |
+| 2026-11-15 | [cubo-magico](2026-11-15-cubo-magico/) | HTML / CSS / JavaScript | Cubo mágico 3D com cronômetro, dicas e resolvedor pelo método de camadas |
 
 ## Como rodar
 

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cubo Mágico</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>Cubo Mágico</h1>
+      <p>Arraste uma fileira do cubo para girá-la, ou clique num adesivo para girar a face (<kbd>Shift</kbd> + clique: anti-horário). Para girar a vista, arraste fora do cubo ou com o botão direito.</p>
+      <p>Teclado: <kbd>U</kbd> <kbd>D</kbd> <kbd>L</kbd> <kbd>R</kbd> <kbd>F</kbd> <kbd>B</kbd> <kbd>M</kbd> <kbd>E</kbd> <kbd>S</kbd>, com <kbd>Shift</kbd> para anti-horário.</p>
+    </header>
+
+    <section class="placar" aria-label="Placar">
+      <div><span>Tempo</span><strong id="tempo">0.00</strong></div>
+      <div><span>Movimentos</span><strong id="contador">0</strong></div>
+      <div><span>Melhor</span><strong id="melhor">–</strong></div>
+    </section>
+
+    <div class="cena" id="cena" aria-label="Cubo 3D. Arraste uma fileira para girá-la; arraste fora do cubo para girar a vista.">
+      <div class="cubo" id="cubo"></div>
+    </div>
+
+    <p class="status" id="status" aria-live="polite">Embaralhe para começar a cronometrar.</p>
+
+    <div class="acoes">
+      <button id="embaralhar" class="principal">Embaralhar</button>
+      <button id="dica">💡 Dica</button>
+      <button id="montar">Montar sozinho</button>
+      <button id="desfazer">Desfazer</button>
+      <button id="resetar">Resetar</button>
+    </div>
+
+    <div class="teclas" id="teclas" aria-label="Movimentos"></div>
+
+    <form class="sequencia" id="formSeq">
+      <label for="seq">Aplicar sequência</label>
+      <div>
+        <input id="seq" autocomplete="off" spellcheck="false" placeholder="R U R' U'">
+        <button>Aplicar</button>
+      </div>
+    </form>
+
+    <p class="historico" id="historico"></p>
+  </main>
+
+  <script src="cubo.js"></script>
+  <script src="resolvedor.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
