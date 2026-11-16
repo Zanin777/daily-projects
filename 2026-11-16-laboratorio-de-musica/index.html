@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Laboratório de Música</title>
+  <meta name="description" content="Aprenda teoria musical tocando: piano, violão, escalas, acordes, bateria e treino de ouvido, tudo com som gerado no navegador.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#inicio"><span aria-hidden="true">♪</span> Laboratório de Música</a>
+    <nav aria-label="Seções">
+      <a href="#notas">Notas</a>
+      <a href="#escalas">Escalas</a>
+      <a href="#acordes">Acordes</a>
+      <a href="#violao">Violão</a>
+      <a href="#ritmo">Ritmo</a>
+      <a href="#ouvido">Treino</a>
+      <button class="mute" id="mute" type="button" aria-pressed="false"><span aria-hidden="true">🔊</span> Som</button>
+    </nav>
+    <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  </header>
+
+  <main>
+    <!-- ================= Topo ================= -->
+    <section id="inicio" class="hero">
+      <div class="hero-text">
+        <p class="eyebrow">Teoria musical na prática</p>
+        <h1>Aprenda música <span class="grad">tocando</span>.</h1>
+        <p class="lead">Um piano, um violão e uma bateria no seu navegador. Descubra como notas viram escalas, escalas viram acordes e acordes viram música. Depois, treine o seu ouvido.</p>
+        <div class="hero-actions">
+          <button class="btn btn-neon" id="hero-play" type="button">▶ Ouça um exemplo</button>
+          <a class="btn btn-ghost" href="#notas">Começar pelas notas</a>
+        </div>
+        <ul class="hero-stats">
+          <li><strong>3</strong> instrumentos</li>
+          <li><strong>6</strong> lições</li>
+          <li><strong>0</strong> arquivos de áudio</li>
+        </ul>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="eq" id="eq"></div>
+        <div class="floating-notes"><span>♪</span><span>♫</span><span>♩</span><span>♬</span><span>♪</span></div>
+      </div>
+    </section>
+
+    <!-- ================= Lição 1: notas ================= -->
+    <section id="notas" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Lição 1</p>
+        <h2>As notas e o piano</h2>
+        <p>A música ocidental usa <strong>12 notas</strong> que se repetem em oitavas. As 7 teclas brancas são <strong>Dó, Ré, Mi, Fá, Sol, Lá e Si</strong>. As 5 pretas ficam entre elas e ganham o nome da vizinha com <strong>♯ (sustenido, meio tom acima)</strong> ou <strong>♭ (bemol, meio tom abaixo)</strong>.</p>
+      </div>
+
+      <div class="cards-3">
+        <div class="mini-card"><b>Semitom (S)</b><p>A menor distância entre duas notas: de uma tecla para a vizinha, branca ou preta.</p></div>
+        <div class="mini-card"><b>Tom (T)</b><p>Dois semitons. De Dó para Ré é um tom, porque tem o Dó♯ no meio.</p></div>
+        <div class="mini-card"><b>Oitava</b><p>12 semitons depois, a nota se repete mais aguda. O nome é o mesmo: Dó4, Dó5...</p></div>
+      </div>
+
+      <div class="instrument-box">
+        <div class="box-top">
+          <div class="now-playing" aria-live="polite">
+            <span class="np-name" id="np-name">Toque uma tecla</span>
+            <span class="np-sub" id="np-sub">com o mouse, o dedo ou o teclado do computador</span>
+          </div>
+          <div class="seg" role="radiogroup" aria-label="Nome das notas" id="label-style">
+            <button type="button" role="radio" aria-checked="true" data-style="solfege">Dó Ré Mi</button>
+            <button type="button" role="radio" aria-checked="false" data-style="letter">C D E</button>
+            <button type="button" role="radio" aria-checked="false" data-style="none">Sem nomes</button>
+          </div>
+        </div>
+        <div class="piano-scroll"><div class="piano" id="piano-main" aria-label="Piano"></div></div>
+        <p class="kbd-hint">⌨️ No teclado do computador: <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>J</kbd> <kbd>K</kbd> são as brancas, <kbd>W</kbd> <kbd>E</kbd> <kbd>T</kbd> <kbd>Y</kbd> <kbd>U</kbd> as pretas. <kbd>Z</kbd> e <kbd>X</kbd> mudam a oitava (<span id="octave-label">4</span>).</p>
+      </div>
+    </section>
+
+    <!-- ================= Lição 2: escalas ================= -->
+    <section id="escalas" class="section alt">
+      <div class="section-head">
+        <p class="eyebrow">Lição 2</p>
+        <h2>Escalas: as "famílias" de notas</h2>
+        <p>Uma escala é um grupo de notas que soam bem juntas. Ela começa numa nota, a <strong>tônica</strong>, e segue um padrão de tons e semitons. Mude a tônica e o padrão continua o mesmo: é por isso que dá para tocar a mesma música em outro tom.</p>
+      </div>
+
+      <div class="picker">
+        <span class="picker-label">Tônica</span>
+        <div class="chips" id="scale-root"></div>
+      </div>
+      <div class="picker">
+        <span class="picker-label">Escala</span>
+        <div class="chips" id="scale-type"></div>
+      </div>
+
+      <div class="instrument-box">
+        <div class="box-top">
+          <div>
+            <h3 class="box-title" id="scale-title"></h3>
+            <p class="box-sub" id="scale-mood"></p>
+          </div>
+          <button class="btn btn-neon small" id="scale-play" type="button">▶ Tocar escala</button>
+        </div>
+        <div class="degrees" id="scale-notes"></div>
+        <p class="formula" id="scale-formula"></p>
+        <div class="piano-scroll"><div class="piano" id="piano-scale" aria-label="Piano mostrando a escala"></div></div>
+      </div>
+    </section>
+
+    <!-- ================= Lição 3: acordes ================= -->
+    <section id="acordes" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Lição 3</p>
+        <h2>Acordes: notas tocadas juntas</h2>
+        <p>Um acorde é a soma de três ou mais notas. O mais comum é a <strong>tríade</strong>: tônica, terça e quinta. A <strong>terça</strong> decide tudo: terça maior deixa o acorde alegre, terça menor deixa ele triste.</p>
+      </div>
+
+      <div class="picker">
+        <span class="picker-label">Tônica</span>
+        <div class="chips" id="chord-root"></div>
+      </div>
+      <div class="picker">
+        <span class="picker-label">Tipo</span>
+        <div class="chips" id="chord-type"></div>
+      </div>
+
+      <div class="instrument-box">
+        <div class="box-top">
+          <div>
+            <h3 class="box-title"><span class="cifra" id="chord-symbol"></span> <span id="chord-name"></span></h3>
+            <p class="box-sub" id="chord-feel"></p>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-neon small" id="chord-play" type="button">▶ Piano</button>
+            <button class="btn btn-ghost small" id="chord-strum" type="button">🎸 Violão</button>
+          </div>
+        </div>
+        <div class="degrees" id="chord-notes"></div>
+        <div class="piano-scroll"><div class="piano" id="piano-chord" aria-label="Piano mostrando o acorde"></div></div>
+        <p class="box-sub fret-caption">No braço do violão, as mesmas notas aparecem em vários lugares. <span class="dot-key root"></span> tônica <span class="dot-key"></span> outras notas do acorde</p>
+        <div class="fret-scroll"><div class="fretboard" id="fret-chord" aria-label="Braço do violão mostrando o acorde"></div></div>
+      </div>
+
+      <h3 class="sub-title">Campo harmônico e progressões</h3>
+      <p class="sub-text">Cada escala maior "gera" 7 acordes, um em cada nota dela: é o <strong>campo harmônico</strong>. As músicas vivem passeando por esses acordes. Este é o campo de <strong id="field-key"></strong> (a tônica escolhida acima). Clique para ouvir cada um:</p>
+      <div class="field" id="field"></div>
+      <div class="progressions">
+        <div class="prog-list" id="prog-list"></div>
+        <p class="prog-about" id="prog-about">Escolha uma progressão famosa para ouvir em loop.</p>
+      </div>
+    </section>
+
+    <!-- ================= Lição 4: violão ================= -->
+    <section id="violao" class="section alt">
+      <div class="section-head">
+        <p class="eyebrow">Lição 4</p>
+        <h2>O violão</h2>
+        <p>São 6 cordas afinadas em <strong>Mi, Lá, Ré, Sol, Si, Mi</strong> (da mais grossa para a mais fina). Cada casa sobe um semitom. Na casa 12, a corda chega à oitava: a nota se repete. Clique em qualquer casa para ouvir.</p>
+      </div>
+
+      <div class="instrument-box">
+        <div class="box-top">
+          <div class="now-playing" aria-live="polite">
+            <span class="np-name" id="gt-name">Escolha um acorde ou uma casa</span>
+            <span class="np-sub" id="gt-sub">o som é de uma corda de verdade, simulada por matemática</span>
+          </div>
+        </div>
+        <div class="open-chords" id="open-chords"></div>
+        <div class="fret-scroll"><div class="fretboard" id="fret-main" aria-label="Braço do violão"></div></div>
+        <p class="box-sub">Leitura: a 1ª corda (Mi agudo) fica em cima, como num diagrama de cifra. <b>✕</b> = corda que não se toca. <b>○</b> = corda solta.</p>
+      </div>
+    </section>
+
+    <!-- ================= Lição 5: ritmo ================= -->
+    <section id="ritmo" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Lição 5</p>
+        <h2>Ritmo: a bateria</h2>
+        <p>A maioria das músicas é em <strong>compasso 4/4</strong>: quatro tempos que se repetem (conte "1, 2, 3, 4"). Aqui cada tempo foi dividido em 4, formando <strong>16 passos</strong>. O <strong>BPM</strong> é a velocidade: quantos tempos cabem num minuto.</p>
+      </div>
+
+      <div class="instrument-box seq-box">
+        <div class="box-top">
+          <div class="btn-row">
+            <button class="btn btn-neon small" id="seq-play" type="button">▶ Tocar</button>
+            <button class="btn btn-ghost small" id="seq-clear" type="button">Limpar</button>
+          </div>
+          <label class="bpm">BPM <input type="range" id="bpm" min="60" max="180" value="100"> <output id="bpm-out">100</output></label>
+        </div>
+        <div class="presets" id="presets"></div>
+        <div class="seq-scroll"><div class="sequencer" id="sequencer"></div></div>
+        <p class="box-sub" id="preset-about">Clique nos quadradinhos para criar o seu ritmo, ou escolha um ritmo pronto.</p>
+      </div>
+    </section>
+
+    <!-- ================= Lição 6: ouvido ================= -->
+    <section id="ouvido" class="section alt">
+      <div class="section-head">
+        <p class="eyebrow">Lição 6</p>
+        <h2>Treino de ouvido</h2>
+        <p>Música se aprende com os ouvidos. Escute e responda. No começo é difícil mesmo: o ouvido melhora com a prática, como um músculo.</p>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Tipo de treino">
+        <button type="button" role="tab" aria-selected="true" data-quiz="interval">⬆️ Sobe ou desce?</button>
+        <button type="button" role="tab" aria-selected="false" data-quiz="chord">🙂 Maior ou menor?</button>
+        <button type="button" role="tab" aria-selected="false" data-quiz="note">🎯 Que nota é essa?</button>
+      </div>
+
+      <div class="quiz">
+        <div class="score">
+          <span>Acertos <strong id="q-hits">0</strong> de <strong id="q-total">0</strong></span>
+          <span>Sequência <strong id="q-streak">0</strong></span>
+          <span>Recorde <strong id="q-best">0</strong></span>
+        </div>
+        <p class="q-title" id="q-title"></p>
+        <div class="q-listen">
+          <button class="listen" id="q-listen" type="button" aria-label="Ouvir de novo"><span aria-hidden="true">▶</span></button>
+          <button class="btn btn-ghost small" id="q-ref" type="button" hidden>Ouvir o Dó (referência)</button>
+        </div>
+        <div class="q-options" id="q-options"></div>
+        <div class="feedback" id="q-feedback" aria-live="polite" hidden></div>
+        <button class="btn btn-neon" id="q-next" type="button" hidden>Próxima →</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Feito com HTML, CSS e JavaScript puro · Todos os sons são gerados com a Web Audio API · Projeto diário #5</p>
+  </footer>
+
+  <script src="music.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

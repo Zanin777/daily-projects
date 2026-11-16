@@ -10,6 +10,7 @@ Um projetinho novo por dia — linguagens variadas, ideias pequenas, código lim
 | 2026-11-11 | [escola-de-poker](2026-11-11-escola-de-poker/) | HTML / CSS / JavaScript | Escola de Texas Hold'em com mesa animada, treinos e calculadora de outs |
 | 2026-11-13 | [sudoku](2026-11-13-sudoku/) | Java | Resolvedor e gerador de Sudoku no terminal, com animação do backtracking |
 | 2026-11-15 | [cubo-magico](2026-11-15-cubo-magico/) | HTML / CSS / JavaScript | Cubo mágico 3D com cronômetro, dicas e resolvedor pelo método de camadas |
+| 2026-11-16 | [laboratorio-de-musica](2026-11-16-laboratorio-de-musica/) | HTML / CSS / JavaScript (Web Audio) | Teoria musical tocando: piano, violão, bateria e treino de ouvido |
 
 ## Como rodar
 
